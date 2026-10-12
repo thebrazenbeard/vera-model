@@ -1,0 +1,39 @@
+{
+  "adapter_training_executed": false,
+  "binding_policy": {
+    "execution_owner": "project-runner",
+    "identity_runtime_owner": "thebrazenbeard/vera-mono",
+    "integration": "OPTIONAL_PROVIDER",
+    "mode": "ADVISORY_ONLY",
+    "model_never_executes_protected_effects": true,
+    "model_never_writes_canonical_memory": true,
+    "selector_owner": "thebrazenbeard/portal"
+  },
+  "candidate_id": "vera-dolphin-glm24b-iq2xs",
+  "donor_model": "DavidAU/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored",
+  "file_sha256_verified_locally": true,
+  "gguf_bytes": 7207034784,
+  "gguf_filename": "Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored.i1-IQ2_XS.gguf",
+  "gguf_sha256": "563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba",
+  "license_reference": "Apache-2.0 as declared by donor and quantization repositories; independently review all downstream notices before release",
+  "local_interface": {
+    "api": "OpenAI-compatible",
+    "api_key_required": true,
+    "context_tokens": 2048,
+    "gpu_backend": "Vulkan1",
+    "gpu_offload_layers": 14,
+    "host": "127.0.0.1",
+    "model_alias": "vera-dolphin-glm24b-iq2xs",
+    "port": 8097
+  },
+  "local_service_observed": true,
+  "local_smoke_observed": true,
+  "model_behavior_qualified": false,
+  "model_route_eligible": false,
+  "model_selected_by_portal": false,
+  "production_deployed": false,
+  "quantization": "IQ2_XS",
+  "quantizer_exact_revision": "37bdf0317324e9e5a9ad43065e573cf37fd6653f",
+  "quantizer_repository": "mradermacher/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored-i1-GGUF",
+  "schema": "VERA_MODEL_DONOR_QUANTIZED_LOCAL_CANDIDATE_V1"
+}
