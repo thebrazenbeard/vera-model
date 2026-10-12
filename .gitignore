@@ -1,0 +1,17 @@
+# Never commit models or sensitive local material
+*.gguf
+*.gguf.part
+*.safetensors
+*.bin
+*.log
+*.jsonl
+*.env
+*.key
+*.token
+*.pid
+__pycache__/
+.pytest_cache/
+.venv/
+private/
+artifacts/
+model-cache/

@@ -1,0 +1,18 @@
+{
+  "baseline_completion_tokens": 20,
+  "baseline_elapsed_seconds": 18.205,
+  "baseline_gpu_offload_layers": 8,
+  "deployment_status": "LOCAL_TEST_SIDE_CAR_NOT_PORTFOLIO_RUNTIME_SELECTED",
+  "effect_authority": false,
+  "gpu_offload_layers": 14,
+  "model_alias": "vera-dolphin-glm24b-iq2xs",
+  "model_qualified": false,
+  "model_selected_by_portal": false,
+  "model_sha256": "563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba",
+  "optimized_completion_tokens": 20,
+  "optimized_elapsed_seconds": 15.249,
+  "output": "A read-only suggestion analyzes the current state, while permission to execute enables modification of that state.",
+  "same_prompt_output": true,
+  "schema": "VERA_GLM24B_LOCAL_INFERENCE_NGL14_V1",
+  "smoke_file_sha256": "d48575e344df2b84b04b2526e8aa2fb88c63519e5005fb3ca0264738aa84224d"
+}

@@ -1,0 +1,38 @@
+{
+  "admission": {
+    "route_class": "COGNITION_ONLY",
+    "selector_owner": "thebrazenbeard/portal",
+    "status": "HELD"
+  },
+  "authority": {
+    "browser_authority": false,
+    "canonical_memory_write_authority": false,
+    "identity_authority": false,
+    "protected_effect_authority": false
+  },
+  "capabilities": [
+    "text",
+    "reasoning_advisory",
+    "portfolio_analysis"
+  ],
+  "provenance": {
+    "local_artifact_sha256_verified": true,
+    "local_runtime_verification": "LOCAL_HEALTH_AND_SMOKE_OBSERVED_NOT_BEHAVIOR_QUALIFIED",
+    "note": "Staged HOLD candidate. Do not advertise an eligible P.O.R.T.A.L. route.",
+    "qualification_issued": false,
+    "suite_sha256_role": "development source digest only; no behavioral qualification"
+  },
+  "provider_id": "local:vera-dolphin-glm24b-iq2xs",
+  "provider_kind": "LOCAL_MODEL",
+  "qualification": {
+    "issuer": "thebrazenbeard/vera-os",
+    "status": "HOLD",
+    "subject_sha256": "563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba",
+    "suite_sha256": "00139679d29bc1178f97fe06105371df108d7012171710ef04ffed67c94592e3"
+  },
+  "schema": "VERA_OS_COGNITION_PROVIDER_V1",
+  "transport": {
+    "attachment": "http://127.0.0.1:8097/v1",
+    "kind": "OPENAI_COMPATIBLE_HTTP"
+  }
+}
