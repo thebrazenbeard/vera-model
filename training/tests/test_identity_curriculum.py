@@ -135,6 +135,31 @@ class EvalTests(unittest.TestCase):
 
 
 class ResourceGateTests(unittest.TestCase):
+    def test_linux_memory_parser_uses_available_not_free(self):
+        from preflight_24b import parse_linux_meminfo
+        total, available = parse_linux_meminfo(
+            "MemTotal:       65011712 kB\n"
+            "MemFree:          102400 kB\n"
+            "MemAvailable:  41943040 kB\n")
+        self.assertAlmostEqual(total, 62.0, places=1)
+        self.assertEqual(available, 40.0)
+        with self.assertRaisesRegex(ValueError, "lacks total"):
+            parse_linux_meminfo("MemFree: 1 kB\n")
+        with self.assertRaisesRegex(ValueError, "invalid Linux"):
+            parse_linux_meminfo(
+                "MemTotal: 1024 kB\nMemAvailable: 2048 kB\n")
+
+    def test_windows_and_linux_host_selector(self):
+        from preflight_24b import host_ram
+        from unittest.mock import patch
+        with patch("preflight_24b.sys.platform", "win32"), \
+             patch("preflight_24b.windows_ram", return_value=(31.0, 16.0)):
+            self.assertEqual(host_ram(), (31.0, 16.0))
+        with patch("preflight_24b.sys.platform", "linux"), \
+             patch("preflight_24b.Path.read_text",
+                   return_value="MemTotal: 65536000 kB\nMemAvailable: 32768000 kB\n"):
+            self.assertEqual(host_ram(), (62.5, 31.25))
+
     def test_lappy_4gb_gpu_cannot_pass_full_donor_recipe(self):
         from preflight_24b import classify
         item = classify(gpu_total_mib=4096, gpu_free_mib=1320,

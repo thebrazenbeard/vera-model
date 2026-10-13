@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 
 DONOR_REPOSITORY = ("DavidAU/"
@@ -71,6 +72,32 @@ def windows_ram() -> tuple[float, float]:
             int(data["FreePhysicalMemory"]) / 1048576)
 
 
+def parse_linux_meminfo(source: str) -> tuple[float, float]:
+    values = {}
+    for line in source.splitlines():
+        if ":" not in line:
+            continue
+        key, raw = line.split(":", 1)
+        parts = raw.strip().split()
+        if len(parts) == 2 and parts[1] == "kB" and parts[0].isdigit():
+            values[key] = int(parts[0])
+    if "MemTotal" not in values or "MemAvailable" not in values:
+        raise ValueError("Linux memory report lacks total/available")
+    total = values["MemTotal"] / 1048576
+    available = values["MemAvailable"] / 1048576
+    if total <= 0 or not 0 <= available <= total:
+        raise ValueError("invalid Linux memory capacity")
+    return total, available
+
+
+def host_ram() -> tuple[float, float]:
+    if sys.platform == "win32":
+        return windows_ram()
+    if sys.platform == "linux":
+        return parse_linux_meminfo(Path("/proc/meminfo").read_text(encoding="ascii"))
+    raise RuntimeError("unsupported host-memory platform")
+
+
 def gpu_memory() -> tuple[int, int]:
     call = subprocess.run(
         ["nvidia-smi", "--query-gpu=memory.total,memory.free",
@@ -104,7 +131,7 @@ def main() -> int:
     if args.output.exists() or not args.output.parent.is_dir():
         raise SystemExit("HOLD: output must be a new file in an existing directory")
     try:
-        host_total, host_free = windows_ram()
+        host_total, host_free = host_ram()
         gpu_total, gpu_free = gpu_memory()
         candidate = classify(gpu_total_mib=gpu_total, gpu_free_mib=gpu_free,
                              host_total_gib=host_total,
