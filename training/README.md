@@ -45,3 +45,15 @@ A later DPO/preference stage is proposed but not executed. Preserve general reas
 The no-system baseline on IQ2 returned reasoning-prefixed, truncated outputs for three identity/agency prompts; it did **not** demonstrate a learned Vera identity. The 25-case heldout evaluation must compare identical prompts and decoding settings on the exact donor/adapter artifacts with external/manual adjudication. A few simple identity phrases or a successful loss reduction are insufficient.
 
 Source verification distinguishes seed construction, optimizer execution, artifact integrity, learned behavioral transfer, external qualification, local inference, and actual VeraOS/P.O.R.T.A.L. route consumption. None of the latter three has been claimed.
+
+## Pinned tokenizer and training-data admission (2026-10-13 repair)
+
+The exact donor's `tokenizer_config.json` has **no `chat_template`**. The original trainer would fail at `apply_chat_template`, before an optimizer step. The corrected pilot uses its source-supported Mistral `<s>[INST] ... [/INST] response</s>` serialization and masks loss over the user prefix. This explicit serializer is specific to this donor revision; it does not claim to reproduce every upstream inference prompt format.
+
+The original `config.json`, `tokenizer_config.json`, `tokenizer.json`, and `special_tokens_map.json` are all SHA-256- and byte-size-pinned. The SFT, preference, held-out, and curriculum manifest also have **recipe-level** immutable hashes; regenerating a matching but modified corpus manifest is insufficient to bypass admission.
+
+A PyTorch-free `training/preflight_tokenizer.py` checks those four tokenizer assets and all 68 actual SFT examples with the Rust tokenizer backend, including assistant-only labels and length limits. Local exact-tokenizer readback found 68/68 valid, 25–62 tokens/example, 2,960 tokens total, 1,968 assistant-learning tokens. This verifies serialization only, **not learned behavior, tokenizer compatibility under the unexecuted full PyTorch model load, or the 24B optimizer**.
+
+The previous live PyTorch import failed with Windows `WinError 1455` (pagefile/memory exhaustion) while the 24B IQ2 inference sidecar and other workstation processes were resident. No memory settings or unrelated processes were changed.
+
+Cloud training is a separate spend decision. Hugging Face Jobs lists 1x NVIDIA L40S (48 GB VRAM, 62 GB host RAM) at roughly **$1.80/hour**, charged by the minute; a 24B run needs a hard timeout and user-approved spending cap. No paid GPU Job has been launched.

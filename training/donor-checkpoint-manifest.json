@@ -9,6 +9,24 @@
   "source": "Exact Hugging Face LFS object digests at pinned revision, not local weight evidence",
   "weights_present_locally": false,
   "training_not_performed": true,
+  "tokenizer_assets": {
+    "config.json": {
+      "bytes": 663,
+      "sha256": "ba08e77da8acb9b7a1154e5e2918bc6f70d49c495a3a9d693f98d1debc22846b"
+    },
+    "tokenizer_config.json": {
+      "bytes": 207071,
+      "sha256": "bfa9ef60e1c1b73d590717a5be4bc2a4b10767256643ca574d3d6950908ae4e0"
+    },
+    "tokenizer.json": {
+      "bytes": 17078037,
+      "sha256": "b76085f9923309d873994d444989f7eb6ec074b06f25b58f1e8d7b7741070949"
+    },
+    "special_tokens_map.json": {
+      "bytes": 22480,
+      "sha256": "e9ffd792532d81b33d0f1c32ddf453d782a6e8a593738b85d52ad05d2b350f70"
+    }
+  },
   "files": {
     "model-00001-of-00010.safetensors": {
       "bytes": 4781571736,

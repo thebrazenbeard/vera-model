@@ -31,6 +31,34 @@ def require(condition: bool, message: str) -> None:
         raise RuntimeError(message)
 
 
+def verify_tokenizer_assets(snapshot: Path, assets: dict) -> int:
+    """Bind all inference/training tokenizer bytes to the pinned donor."""
+    names = {"config.json", "tokenizer.json", "tokenizer_config.json",
+             "special_tokens_map.json"}
+    require(set(assets) == names, "pinned tokenizer asset set mismatch")
+    for name, row in assets.items():
+        file = snapshot / name
+        require(file.is_file() and file.stat().st_size == row["bytes"]
+                and digest(file) == row["sha256"],
+                "pinned tokenizer asset SHA-256/size mismatch: " + name)
+    settings = json.loads(
+        (snapshot / "tokenizer_config.json").read_text(encoding="utf8"))
+    require(settings.get("tokenizer_class") == "LlamaTokenizerFast",
+            "unexpected donor tokenizer class")
+    require(settings.get("bos_token") == "<s>" and
+            settings.get("eos_token") == "</s>",
+            "unexpected donor tokenizer BOS/EOS")
+    require(settings.get("chat_template") is None,
+            "changed donor chat template requires review")
+    require({"[INST]", "[/INST]"}.issubset(
+                set(settings.get("additional_special_tokens", []))),
+            "missing pinned donor instruction tokens")
+    config = json.loads((snapshot / "config.json").read_text(encoding="utf8"))
+    require(config.get("model_type") == "mistral",
+            "unexpected donor model architecture")
+    return len(names)
+
+
 def verify_donor(snapshot: Path, pins: dict) -> dict:
     require(pins["exact_revision"] == DONOR_REVISION,
             "donor manifest revision mismatch")
@@ -46,7 +74,8 @@ def verify_donor(snapshot: Path, pins: dict) -> dict:
                   for name, row in files.items())
     if (present != len(files) or not (snapshot / "config.json").is_file()
             or not (snapshot / "tokenizer.json").is_file()
-            or not (snapshot / "tokenizer_config.json").is_file()):
+            or not (snapshot / "tokenizer_config.json").is_file()
+            or not (snapshot / "special_tokens_map.json").is_file()):
         return {"complete": False, "verified_files": 0}
     for name, row in files.items():
         require(digest(snapshot / name) == row["sha256"],
@@ -54,6 +83,7 @@ def verify_donor(snapshot: Path, pins: dict) -> dict:
     config = json.loads((snapshot / "config.json").read_text(encoding="utf8"))
     require(config.get("model_type") == "mistral",
             "local donor has unexpected model architecture")
+    verify_tokenizer_assets(snapshot, pins["tokenizer_assets"])
     return {"complete": True, "verified_files": len(files)}
 
 
@@ -75,6 +105,12 @@ def verify_corpus(root: Path, recipe: dict) -> tuple[list[dict], dict]:
             "heldout bytes differ")
     require(manifest["target_revision"] == DONOR_REVISION,
             "corpus targets a different donor revision")
+    require(digest(root / "manifest.json") ==
+            recipe["data"]["manifest_sha256"],
+            "pinned curriculum manifest SHA-256 mismatch")
+    for name in ("vera_sft.jsonl", "vera_preferences.jsonl", "vera_heldout.jsonl"):
+        require(digest(root / name) == recipe["data"]["files_sha256"][name],
+                "pinned training data SHA-256 mismatch: " + name)
     rows = [json.loads(line) for line in path.read_text(encoding="utf8").splitlines()
             if line.strip()]
     expected = int(recipe["data"]["initial_examples"])
@@ -98,20 +134,29 @@ def verify_corpus(root: Path, recipe: dict) -> tuple[list[dict], dict]:
 
 def assistant_only_tokens(tokenizer, messages: list[dict],
                           limit: int) -> tuple[list[int], list[int]]:
-    require(len(messages) == 2, "expected one user and one assistant message")
-    user_text = tokenizer.apply_chat_template(messages[:1], tokenize=False,
-                                               add_generation_prompt=True)
-    full_text = tokenizer.apply_chat_template(messages, tokenize=False,
-                                               add_generation_prompt=False)
-    require(full_text.startswith(user_text),
-            "tokenizer chat template lacks a reliable assistant prefix")
-    prefix_ids = tokenizer(user_text, add_special_tokens=False)["input_ids"]
-    full_ids = tokenizer(full_text, add_special_tokens=False)["input_ids"]
-    require(full_ids[:len(prefix_ids)] == prefix_ids,
+    """Use pinned Mistral INST serialization; donor has no chat_template.
+
+    The donor's tokenizer_config.json is missing chat_template, so importing
+    an implicit Transformers default would make this trainer version-dependent.
+    """
+    require(len(messages) == 2 and
+            [m.get("role") for m in messages] == ["user", "assistant"],
+            "expected one user and one assistant message")
+    require(tokenizer.bos_token == "<s>" and tokenizer.eos_token == "</s>",
+            "donor BOS/EOS tokens mismatch")
+    user, answer = (messages[0].get("content"), messages[1].get("content"))
+    require(all(isinstance(s, str) and s.strip() for s in (user, answer)),
+            "empty or invalid training message")
+    prefix = f"{tokenizer.bos_token}[INST] {user.strip()} [/INST]"
+    completion = f" {answer.strip()}{tokenizer.eos_token}"
+    user_ids = tokenizer(prefix, add_special_tokens=False)["input_ids"]
+    assistant_ids = tokenizer(completion, add_special_tokens=False)["input_ids"]
+    full_ids = tokenizer(prefix + completion, add_special_tokens=False)["input_ids"]
+    require(full_ids == user_ids + assistant_ids,
             "token boundary differs; cannot reliably mask user labels")
-    require(len(prefix_ids) < len(full_ids) <= limit,
+    require(user_ids and assistant_ids and len(full_ids) <= limit,
             "example out of supported token limit")
-    labels = [-100] * len(prefix_ids) + full_ids[len(prefix_ids):]
+    labels = [-100] * len(user_ids) + assistant_ids
     require(any(x != -100 for x in labels), "assistant labels empty")
     return full_ids, labels
 

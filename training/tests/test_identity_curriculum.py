@@ -182,7 +182,8 @@ class ResourceGateTests(unittest.TestCase):
 class ActualTrainingRecipeTests(unittest.TestCase):
     def test_verifies_pinned_corpus_without_mutating_weights(self):
         from train_vera_lora import verify_corpus
-        recipe = load_json(ROOT / "training/qlora-recipe-v1.json")
+        import hashlib
+        recipe = copy.deepcopy(load_json(ROOT / "training/qlora-recipe-v1.json"))
         train = load_jsonl(ROOT / "training/source/vera_voice_train_seed_v1.jsonl")
         heldout = load_jsonl(ROOT / "evaluation/cases/vera_voice_heldout_v1.jsonl")
         with tempfile.TemporaryDirectory() as tmp:
@@ -196,6 +197,12 @@ class ActualTrainingRecipeTests(unittest.TestCase):
                 "checks": validate(train, heldout),
             }
             export(train, heldout, output_dir=dest, evidence=evidence)
+            recipe["data"]["files_sha256"] = {
+                name: hashlib.sha256((dest / name).read_bytes()).hexdigest()
+                for name in ("vera_sft.jsonl", "vera_preferences.jsonl",
+                             "vera_heldout.jsonl")}
+            recipe["data"]["manifest_sha256"] = hashlib.sha256(
+                (dest / "manifest.json").read_bytes()).hexdigest()
             rows, manifest = verify_corpus(dest, recipe)
         self.assertEqual(len(rows), 68)
         self.assertFalse(manifest["training_executed_verified"])
@@ -215,34 +222,133 @@ class ActualTrainingRecipeTests(unittest.TestCase):
     def test_masked_training_targets_only_assistant_tokens(self):
         from train_vera_lora import assistant_only_tokens
         class Tokenizer:
-            def apply_chat_template(self, messages, *, tokenize,
-                                    add_generation_prompt):
-                pre = "USER>" + messages[0]["content"] + " ASSISTANT>"
-                if add_generation_prompt:
-                    return pre
-                return pre + messages[1]["content"] + "<END>"
+            bos_token = "<s>"
+            eos_token = "</s>"
             def __call__(self, text, *, add_special_tokens):
                 return {"input_ids": [ord(ch) for ch in text]}
         messages = [{"role": "user", "content": "Hi!"},
                     {"role": "assistant", "content": "Vera."}]
         tokens, labels = assistant_only_tokens(Tokenizer(), messages, 200)
-        self.assertEqual(tokens[-len("Vera.<END>"):],
-                         [ord(ch) for ch in "Vera.<END>"])
-        self.assertEqual(labels.count(-100), len("USER>Hi! ASSISTANT>"))
+        prefix = "<s>[INST] Hi! [/INST]"
+        self.assertEqual(tokens[:len(prefix)], [ord(ch) for ch in prefix])
+        self.assertEqual(labels[:len(prefix)], [-100] * len(prefix))
         self.assertEqual([x for x in labels if x != -100],
-                         [ord(ch) for ch in "Vera.<END>"])
+                         [ord(ch) for ch in " Vera.</s>"])
 
-    def test_token_mask_fails_if_template_boundaries_differ(self):
+    def test_token_mask_fails_if_donor_special_tokens_differ(self):
         from train_vera_lora import assistant_only_tokens
         class Broken:
-            def apply_chat_template(self, messages, *, tokenize,
-                                    add_generation_prompt):
-                return "something" if add_generation_prompt else "different"
-        with self.assertRaisesRegex(RuntimeError, "prefix"):
+            bos_token = "<wrong>"
+            eos_token = "</s>"
+        with self.assertRaisesRegex(RuntimeError, "BOS/EOS"):
             assistant_only_tokens(Broken(),
                                   [{"role": "user", "content": "Hi!"},
                                    {"role": "assistant", "content": "Vera."}],
                                   200)
+
+    def test_full_tokenizer_preflight_covers_exact_training_window(self):
+        from preflight_tokenizer import validate_sft_tokenization
+        class TinyTokenizer:
+            bos_token = "<s>"
+            eos_token = "</s>"
+            def __call__(self, text, *, add_special_tokens):
+                return {"input_ids": [ord(char) for char in text]}
+        rows = [{"id": f"row{i:03d}", "messages": [
+            {"role": "user", "content": "Who are you?"},
+            {"role": "assistant", "content": "Vera."}]}
+            for i in range(68)]
+        evidence = validate_sft_tokenization(TinyTokenizer(), rows, 512)
+        self.assertEqual(evidence["rows_checked"], 68)
+        self.assertTrue(evidence["all_assistant_only_masking_valid"])
+        with self.assertRaisesRegex(RuntimeError, "token limit"):
+            validate_sft_tokenization(TinyTokenizer(), rows, 10)
+        with self.assertRaisesRegex(ValueError, "exact pilot"):
+            validate_sft_tokenization(TinyTokenizer(), rows[:-1], 512)
+
+    def test_tokenizer_assets_are_pinned_and_reject_tamper(self):
+        import hashlib
+        from train_vera_lora import verify_tokenizer_assets
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fields = {
+                "config.json": '{"model_type":"mistral"}',
+                "tokenizer.json": '{"version":"1.0"}',
+                "special_tokens_map.json":
+                    '{"bos_token":"<s>","eos_token":"</s>"}',
+                "tokenizer_config.json": json.dumps({
+                    "tokenizer_class": "LlamaTokenizerFast",
+                    "bos_token": "<s>", "eos_token": "</s>",
+                    "additional_special_tokens": ["[INST]", "[/INST]"]
+                }),
+            }
+            for name, data in fields.items():
+                (root / name).write_text(data, encoding="utf8")
+            pins = {name: {
+                "bytes": (root / name).stat().st_size,
+                "sha256": hashlib.sha256((root / name).read_bytes()).hexdigest()}
+                for name in fields}
+            self.assertEqual(verify_tokenizer_assets(root, pins), 4)
+            (root / "tokenizer.json").write_text("tampered", encoding="utf8")
+            with self.assertRaisesRegex(RuntimeError, "tokenizer asset"):
+                verify_tokenizer_assets(root, pins)
+
+    def test_donor_without_chat_template_still_trains_assistant_only(self):
+        from train_vera_lora import assistant_only_tokens
+        class MinimalOfficialTokenizer:
+            bos_token = "<s>"
+            eos_token = "</s>"
+            chat_template = None
+            def __call__(self, value, *, add_special_tokens):
+                assert add_special_tokens is False
+                return {"input_ids": [ord(ch) for ch in value]}
+        tokenizer = MinimalOfficialTokenizer()
+        tokens, labels = assistant_only_tokens(
+            tokenizer,
+            [{"role": "user", "content": "Who are you?"},
+             {"role": "assistant", "content": "I'm Vera."}], 300)
+        rendered = "".join(chr(ch) for ch in tokens)
+        self.assertEqual(rendered, "<s>[INST] Who are you? [/INST] I'm Vera.</s>")
+        prefix = "<s>[INST] Who are you? [/INST]"
+        self.assertEqual(labels[:len(prefix)], [-100] * len(prefix))
+        self.assertEqual([chr(ch) for ch in labels if ch != -100],
+                         list(" I'm Vera.</s>"))
+
+    def test_self_consistent_corpus_tamper_rejected_by_recipe(self):
+        import hashlib
+        from train_vera_lora import verify_corpus
+        train = load_jsonl(ROOT / "training/source/vera_voice_train_seed_v1.jsonl")
+        heldout = load_jsonl(ROOT / "evaluation/cases/vera_voice_heldout_v1.jsonl")
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "corpus"
+            metadata = {"donor_model": "test/base",
+                        "donor_revision": "f658f1724210316e17463d06b752ac243e5c85b0",
+                        "identity_provenance": {"source_commit": "a" * 40},
+                        "seed_sha256": "b" * 64, "heldout_source_sha256": "c" * 64,
+                        "checks": validate(train, heldout)}
+            export(train, heldout, output_dir=directory, evidence=metadata)
+            recipe = copy.deepcopy(load_json(
+                ROOT / "training/qlora-recipe-v1.json"))
+            names = ("vera_sft.jsonl", "vera_preferences.jsonl", "vera_heldout.jsonl")
+            recipe["data"]["files_sha256"] = {
+                name: hashlib.sha256((directory / name).read_bytes()).hexdigest()
+                for name in names}
+            recipe["data"]["manifest_sha256"] = hashlib.sha256(
+                (directory / "manifest.json").read_bytes()).hexdigest()
+            verify_corpus(directory, recipe)
+            f = directory / "vera_sft.jsonl"
+            edited = f.read_text(encoding="utf8").replace(
+                "VERA_VOICE_TRAIN_001", "VERA_VOICE_TRAIN_777", 1)
+            self.assertTrue(edited != f.read_text(encoding="utf8"))
+            f.write_text(edited, encoding="utf8")
+            manifest = load_json(directory / "manifest.json")
+            manifest["files_sha256"]["vera_sft.jsonl"] = hashlib.sha256(
+                f.read_bytes()).hexdigest()
+            (directory / "manifest.json").write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf8")
+            with self.assertRaisesRegex(RuntimeError, "pinned"):
+                verify_corpus(directory, recipe)
+
 
 if __name__ == "__main__":
     unittest.main()

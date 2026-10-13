@@ -22,7 +22,13 @@
     "heldout": "vera_heldout.jsonl",
     "privacy": "BEHAVIOR_ONLY_NO_PRIVATE_LOGS",
     "initial_examples": 68,
-    "seed_pilot_only": true
+    "seed_pilot_only": true,
+    "manifest_sha256": "5c03464aaaf9d96e72e54c6357c96b866ec14d99f6de59d8702a3b0b9fb8539f",
+    "files_sha256": {
+      "vera_sft.jsonl": "c9100680b72ab734fc2988fb26437eadde81919fdd329ba9dad08ae36aa35e0b",
+      "vera_preferences.jsonl": "055a6006f172b7e65d2085cb985bd4a24795782e37bf1735316359aa1482685b",
+      "vera_heldout.jsonl": "f92f5d11f0057898e20ebb6fae1175713aefff40e27437c6862276b3b2b62e0d"
+    }
   },
   "trainer": {
     "quantization": "bnb_nf4_4bit_double_quant",
