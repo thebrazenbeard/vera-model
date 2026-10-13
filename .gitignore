@@ -8,6 +8,7 @@
 # Explicitly reviewed, non-personal Vera behavior seed and withheld evaluation cases.
 !training/source/vera_voice_train_seed_v1.jsonl
 !evaluation/cases/vera_voice_heldout_v1.jsonl
+temp_auto_push.bat
 *.env
 *.key
 *.token
@@ -18,3 +19,5 @@ __pycache__/
 private/
 artifacts/
 model-cache/
+.gitignore
+branch_structure.json

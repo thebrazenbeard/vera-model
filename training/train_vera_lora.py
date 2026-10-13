@@ -15,7 +15,7 @@ import random
 import subprocess
 import sys
 
-from preflight_24b import classify, windows_ram, gpu_memory, DONOR_REVISION
+from preflight_24b import classify, host_ram, gpu_memory, DONOR_REVISION
 
 
 def digest(path: Path) -> str:
@@ -272,7 +272,7 @@ def main() -> int:
     require(not args.output_dir.exists(),
             "prior training output exists: do not retry or overwrite")
     rows, corpus = verify_corpus(args.corpus, recipe)
-    host_total, host_free = windows_ram()
+    host_total, host_free = host_ram()
     gpu_total, gpu_free = gpu_memory()
     # Check availability before expensive full-shard SHA-256 validation.
     capacity = classify(gpu_total_mib=gpu_total, gpu_free_mib=gpu_free,

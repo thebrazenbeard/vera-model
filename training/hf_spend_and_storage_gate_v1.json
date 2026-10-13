@@ -1,0 +1,52 @@
+{
+  "schema": "VERA_DOLPHIN24B_HF_JOB_SPEND_AND_STORAGE_GATE_V1",
+  "status": "BLOCKED_HF_OAUTH_MISSING_STORAGE_WRITE",
+  "authorized_gpu_cost_usd": 5,
+  "maximum_single_gpu_job_hours": 2.3333333333333335,
+  "expected_gpu_price_usd_per_hour": 1.8,
+  "maximum_single_job_gpu_cost_usd": 4.2,
+  "buffer_usd": 0.8,
+  "flavor": "l40sx1",
+  "gpu_vram_gib": 48,
+  "host_ram_gib": 62,
+  "timeout_seconds": 8400,
+  "attempts": 1,
+  "donor_revision": "f658f1724210316e17463d06b752ac243e5c85b0",
+  "source_repository": "thebrazenbeard/vera-model",
+  "source_branch": "work/vera-voice-train-prep-20261013",
+  "pending_source_commit_binding": "EXECUTION_TIME_EXACT_GIT_HEAD_REQUIRED",
+  "curriculum_sha256": {
+    "manifest.json": "5c03464aaaf9d96e72e54c6357c96b866ec14d99f6de59d8702a3b0b9fb8539f",
+    "vera_sft.jsonl": "c9100680b72ab734fc2988fb26437eadde81919fdd329ba9dad08ae36aa35e0b",
+    "vera_preferences.jsonl": "055a6006f172b7e65d2085cb985bd4a24795782e37bf1735316359aa1482685b",
+    "vera_heldout.jsonl": "f92f5d11f0057898e20ebb6fae1175713aefff40e27437c6862276b3b2b62e0d"
+  },
+  "artifacts": {
+    "private_bucket": "hf://buckets/thebrazenbeard/vera-dolphin24b-checkpoints",
+    "output_mount": "/outputs",
+    "requires_write_readback": true,
+    "never_publish_to_public_repo": true,
+    "never_lose_artifact_on_ephemeral_exit": true
+  },
+  "prerequisites": {
+    "authenticated_hf_cli_with_bucket_write": true,
+    "bucket_exists_private": true,
+    "model_public_donor_download_enabled": true,
+    "exact_sft_corpus_mounted_readonly": true,
+    "no_alternate_donor": true,
+    "no_retries": true,
+    "verified_training_code_and_receipt": true
+  },
+  "latest_observed": {
+    "hf_plugin_scopes": [
+      "jobs",
+      "openid",
+      "profile",
+      "read-mcp",
+      "read-repos"
+    ],
+    "private_bucket_create_result": "403_READ_ACCESS_ONLY",
+    "gpu_jobs_started": 0,
+    "model_optimizer_steps": 0
+  }
+}
