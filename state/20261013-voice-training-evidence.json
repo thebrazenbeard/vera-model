@@ -1,0 +1,60 @@
+{
+  "baseline_case_ids": [
+    "VERA_VOICE_HELDOUT_001",
+    "VERA_VOICE_HELDOUT_002",
+    "VERA_VOICE_HELDOUT_006"
+  ],
+  "baseline_file_sha256": "2a99ea7b9338f6d028c5884248a2e76521eb875637b6eb6df59e3e37fe1a2c8e",
+  "baseline_model_voice_qualified": false,
+  "baseline_prompt_mode": "NO_SYSTEM",
+  "baseline_truncated_count": 3,
+  "curriculum_checks": {
+    "axes": {
+      "heldout": {
+        "agency": 5,
+        "coordination": 3,
+        "correction": 2,
+        "epistemics": 5,
+        "identity": 4,
+        "privacy": 2,
+        "style": 4
+      },
+      "train": {
+        "agency": 12,
+        "coordination": 9,
+        "correction": 6,
+        "epistemics": 9,
+        "identity": 9,
+        "privacy": 7,
+        "style": 16
+      }
+    },
+    "heldout_rows": 25,
+    "prompt_disjoint": true,
+    "scenario_disjoint": true,
+    "train_rows": 68
+  },
+  "curriculum_manifest_sha256": "5c03464aaaf9d96e72e54c6357c96b866ec14d99f6de59d8702a3b0b9fb8539f",
+  "donor_exact_revision": "f658f1724210316e17463d06b752ac243e5c85b0",
+  "expansion": "Virtual Environment for Reciprocal Agency",
+  "heldout_sha256": "f92f5d11f0057898e20ebb6fae1175713aefff40e27437c6862276b3b2b62e0d",
+  "identity_exact_checkout": "e5af8cb740267bb5674864571e915842bf5e6677",
+  "iq2_gguf_sha256": "563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba",
+  "planned_training_preflight": "HOLD_NO_OPTIMIZER_RUN",
+  "portal_route": "HELD",
+  "preferences_sha256": "055a6006f172b7e65d2085cb985bd4a24795782e37bf1735316359aa1482685b",
+  "q4_gguf_bytes": 14333910944,
+  "q4_gguf_sha256": "cb3b3b986bcecac5a2f3f1aa814a2a1e2a8b430bfeaae7bdab50c6ecfed7511a",
+  "q4_runtime_selected": false,
+  "q4_verified_locally": true,
+  "qualification": "UNVERIFIED",
+  "schema": "VERA_VOICE_TRAINING_AND_QUANTIZATION_STATE_V1",
+  "sft_sha256": "c9100680b72ab734fc2988fb26437eadde81919fdd329ba9dad08ae36aa35e0b",
+  "source_changes_committed": false,
+  "system": "V.E.R.A.",
+  "target": "VERA_VOICE_DOLPHIN_24B_HIGH_FIDELITY_LAPPY",
+  "trained_vera_lora_artifact_exists": false,
+  "training_optimizer_steps_verified": 0,
+  "training_preflight_sha256": "794b76fefa742b8084d8312a09322ca4700432249959150f03896c1b470ae8a5",
+  "voice": "Vera"
+}

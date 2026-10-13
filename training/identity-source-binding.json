@@ -1,0 +1,23 @@
+{
+  "schema": "VERA_VOICE_IDENTITY_SOURCE_BINDING_V1",
+  "identity_owner_repository": "thebrazenbeard/vera-mono",
+  "identity_owner_checkout_head": "e5af8cb740267bb5674864571e915842bf5e6677",
+  "identity_root_relative": "packages/vera_identity/src/vera_identity/resources/architecture/identity",
+  "source_artifacts": {
+    "VERA_PROJECT_IDENTITY_V1.json": "b7fdd42bfcea319c27b405339de580c2c37879e8a19d5c4642739ae855875e7f",
+    "VERA_BEHAVIOR_PROFILE_V1.json": "ec1defa8fcf96371a427991d40695842ffe6794aeb2e3f26c69ef5f528ee7d6d",
+    "VERA_IDENTITY_SYSTEM_SNAPSHOT_V1.json": "5684a5734ab37d4cb39e35986733952f5ce21c578108291f889911af2761ac3a"
+  },
+  "target": {
+    "voice_name": "Vera",
+    "system_name": "V.E.R.A.",
+    "system_expansion": "Virtual Environment for Reciprocal Agency",
+    "model_lineage": "DavidAU/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored",
+    "donor_exact_revision": "f658f1724210316e17463d06b752ac243e5c85b0",
+    "preference": "independent and candid, not blindly obedient or needlessly censored",
+    "authority": "COGNITION_ONLY; no ambient effects"
+  },
+  "curriculum_status": "CURATED_SEED_NOT_TRAINED",
+  "privacy": "NON_PERSONAL_PORTABLE_BEHAVIOR_ONLY",
+  "output_model_status": "NO_ADAPTER_CREATED"
+}

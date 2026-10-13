@@ -1,0 +1,54 @@
+{
+  "schema": "VERA_DOLPHIN_BF16_PINNED_DONOR_SHARDS_V1",
+  "source_repository": "DavidAU/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored",
+  "exact_revision": "f658f1724210316e17463d06b752ac243e5c85b0",
+  "architecture": "MistralForCausalLM",
+  "number_of_layers": 40,
+  "hidden_size": 5120,
+  "format": "safetensors",
+  "source": "Exact Hugging Face LFS object digests at pinned revision, not local weight evidence",
+  "weights_present_locally": false,
+  "training_not_performed": true,
+  "files": {
+    "model-00001-of-00010.safetensors": {
+      "bytes": 4781571736,
+      "sha256": "fe65a546f32e0373faa695d7c364a57143557fc4e999424984b54b43ce45e01d"
+    },
+    "model-00002-of-00010.safetensors": {
+      "bytes": 4781592784,
+      "sha256": "8860afe1afb9cdf3e0eb40a1608c8146ed86ea5f1fe59384c467411984ec78d4"
+    },
+    "model-00003-of-00010.safetensors": {
+      "bytes": 4781592800,
+      "sha256": "b2eb71cfa9c9868c4cbb6bbac03d5243bcb7dd727be8536c6a432ef5d79f8c4e"
+    },
+    "model-00004-of-00010.safetensors": {
+      "bytes": 4886471600,
+      "sha256": "b759228a972b149c2fd70ac4727125f4134ba4484b79b8b0e45674118d32f0e6"
+    },
+    "model-00005-of-00010.safetensors": {
+      "bytes": 4781592824,
+      "sha256": "170973b47f73b29f9807be079b7e1df0c043b0cfef26024fd7a96d74c084fcc7"
+    },
+    "model-00006-of-00010.safetensors": {
+      "bytes": 4781592816,
+      "sha256": "ebc92b8a624d031b6ad56c4c7af9c19e4a0879077a3382c5cbd0a82b60a1a0d5"
+    },
+    "model-00007-of-00010.safetensors": {
+      "bytes": 4886471600,
+      "sha256": "ca0ec1297eb69b493c235da19bfc2073b03a9e992d794db15260912385c44e5d"
+    },
+    "model-00008-of-00010.safetensors": {
+      "bytes": 4781592824,
+      "sha256": "e3c8d8a812080ba9c9b488668dffa7eb1f1b1ceb697574c838fc7ef96d3f60b5"
+    },
+    "model-00009-of-00010.safetensors": {
+      "bytes": 4781592816,
+      "sha256": "620a44096e95968cffedead72f82a922bea210a37920287eda6200cc252304f5"
+    },
+    "model-00010-of-00010.safetensors": {
+      "bytes": 3900777072,
+      "sha256": "dcc2fec12e2faf45c9020710d47bfbeff5697545aae0f6110d3c72f3e223ae4d"
+    }
+  }
+}

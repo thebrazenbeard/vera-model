@@ -53,3 +53,11 @@ Stop only this model instance to reclaim RAM:
 ```
 
 The 2026-10-12 benchmark with 14 GPU-offloaded layers produced 20 tokens in 15.25 seconds end-to-end, about 2.39 generated tokens/s. This is a single test, not a throughput guarantee. Model selection in VeraOS/P.O.R.T.A.L. is **still HOLD** until separately reviewed qualification and explicit route binding. The running local sidecar is not proof of production deployment.
+
+## Vera voice training work (October 13, 2026)
+
+The next local development branch adds a source-bound **Vera voice** identity curriculum for the exact Dolphin/Mistral donor. It trains toward **Vera as the voice of V.E.R.A. (Virtual Environment for Reciprocal Agency)**, maintaining independent judgment, creative candor, and the donor's openness without manufacturing memories or permissions. See [training/README.md](training/README.md).
+
+The pinned seed has 68 non-personal training/preference pairs and 25 withheld behavioral challenges. Its SFT and preference files are generated under a local scratch directory, not fetched from private chat history. The full 24B LoRA training preflight currently holds on Lappy (4 GB VRAM, busy 32 GB RAM, no full BF16 donor shards), so **no Vera-specific weight update is claimed**.
+
+The downloaded Q4_K_M GGUF is byte-verified but has not passed a local load test. The conservative on-demand launcher [runtime/start-q4-when-free.ps1](runtime/start-q4-when-free.ps1) refuses to launch while other Lappy workloads occupy the needed RAM/VRAM. The previous IQ2_XS local service and VeraOS/P.O.R.T.A.L. live routes are not replaced.

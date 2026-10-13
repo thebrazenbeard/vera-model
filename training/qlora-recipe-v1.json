@@ -1,0 +1,68 @@
+{
+  "schema": "VERA_DOLPHIN24B_VOICE_QLORA_RECIPE_V1",
+  "status": "STAGED_REQUIRES_RESOURCE_AND_SOURCE_PREFLIGHT",
+  "target": {
+    "donor": "DavidAU/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored",
+    "revision": "f658f1724210316e17463d06b752ac243e5c85b0",
+    "architecture": "MistralForCausalLM",
+    "source_shards_manifest": "training/donor-checkpoint-manifest.json"
+  },
+  "identity": {
+    "referent": "Vera",
+    "system": "V.E.R.A.",
+    "expansion": "Virtual Environment for Reciprocal Agency",
+    "source_binding": "training/identity-source-binding.json",
+    "voice_in_weights_required": true
+  },
+  "data": {
+    "corpus_schema": "VERA_DOLPHIN_IDENTITY_CURRICULUM_BUILD_V1",
+    "source_build": "D:\\VERA\\.scratch\\vera-dolphin-identity-curriculum-20261013-v1",
+    "sft": "vera_sft.jsonl",
+    "preferences": "vera_preferences.jsonl",
+    "heldout": "vera_heldout.jsonl",
+    "privacy": "BEHAVIOR_ONLY_NO_PRIVATE_LOGS",
+    "initial_examples": 68,
+    "seed_pilot_only": true
+  },
+  "trainer": {
+    "quantization": "bnb_nf4_4bit_double_quant",
+    "format": "peft_lora_unmerged",
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "gradient_checkpointing": true,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "max_sequence_tokens": 512,
+    "microbatch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "sft_epochs": 1,
+    "learning_rate": 0.00005,
+    "seed": 20261013,
+    "use_all_train_rows": true,
+    "train_only_assistant_tokens": true
+  },
+  "phase_2": {
+    "preference_method": "DPO",
+    "status": "PROPOSED_ONLY_SEPARATE_APPROVAL_AFTER_SFT_EVAL",
+    "reason": "Preserve donor independent-minded open-topic behavior without overfitting to boilerplate; do not claim DPO training yet."
+  },
+  "gates": {
+    "local_resource_preflight": "training/preflight_24b.py",
+    "minimum_gpu_vram_mib": 24576,
+    "donor_weights_sha256_required": true,
+    "allow_weight_merge": false,
+    "allow_deployment": false,
+    "independent_voice_eval_required": true,
+    "independent_general_capabilities_eval_required": true
+  },
+  "qualification": "NOT_TRAINED_NOT_QUALIFIED",
+  "effect": "NO_WEIGHT_UPDATES_YET"
+}
