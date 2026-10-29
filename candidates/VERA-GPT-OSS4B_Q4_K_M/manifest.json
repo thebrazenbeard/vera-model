@@ -9,8 +9,8 @@
   "training": {
     "source_repo": "AmanPriyanshu/gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts",
     "source_format": "safetensors",
-    "source_revision": null,
-    "source_revision_gate": "MUST_RESOLVE_IMMUTABLE_REVISION_BEFORE_TRAINING",
+    "source_revision": "d2fbf35dfdc9de041e71377c7747508fff794cbe",
+    "source_revision_gate": "PINNED_REVISION_VERIFY_BEFORE_TRAINING",
     "method": "LoRA on trainable original; GGUF inference weights must not be treated as PEFT source",
     "model_weight_updates_observed": false,
     "adapter_reload_verified": false,
