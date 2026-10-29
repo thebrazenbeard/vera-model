@@ -2,7 +2,7 @@
   "schema": "vera-model.candidate.v1",
   "display_name": "VERA-GPT-OSS4B Q4_K_M",
   "slug": "vera-gpt-oss4b-q4_k_m",
-  "status": "SOURCE_PREPARED_NOT_DOWNLOADED_NOT_TRAINED_NOT_QUALIFIED",
+  "status": "LOCAL_GGUF_VERIFIED_NOT_TRAINED_NOT_QUALIFIED",
   "kind": "experimental_pruned_moe",
   "base_architecture": "gpt_oss",
   "parameter_count_reported": 4185500000,
@@ -23,8 +23,18 @@
     "expected_bytes": 3233019552,
     "sha256": "38b0279e4294beb54f97ac23051674174b34b2acd6c5e6532860c72298789586",
     "size_ceiling_bytes": 4000000000,
-    "local_destination_root": "D:\\VERA\\Models",
-    "local_download_verified": false,
+    "local_destination_root": "D:\\VERA\\models\\gguf\\vera-gpt-oss4b-q4-k-m",
+    "local_download_verified": true,
+    "local_acquisition_receipt": {
+      "host": "LAPPY",
+      "path": "D:\\VERA\\models\\gguf\\vera-gpt-oss4b-q4-k-m\\gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts-q4_k_m.gguf",
+      "bytes": 3233019552,
+      "sha256": "38b0279e4294beb54f97ac23051674174b34b2acd6c5e6532860c72298789586",
+      "verified_at_utc": "2026-10-29T17:45:26Z",
+      "evidence_class": "REAL_SYSTEM_PROBE",
+      "method": "PowerShell Get-Item Length and Get-FileHash SHA256; non-mutating Lappy readback",
+      "scope": "HISTORICAL_FILE_CUSTODY_NOT_CONTINUOUS_HOST_HEALTH_OR_MODEL_QUALIFICATION"
+    },
     "performance_verified": false
   },
   "integration": {
