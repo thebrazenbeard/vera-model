@@ -1,0 +1,49 @@
+{
+  "schema": "vera-model.candidate.v1",
+  "display_name": "VERA-GPT-OSS4B Q4_K_M",
+  "slug": "vera-gpt-oss4b-q4_k_m",
+  "status": "SOURCE_PREPARED_NOT_DOWNLOADED_NOT_TRAINED_NOT_QUALIFIED",
+  "kind": "experimental_pruned_moe",
+  "base_architecture": "gpt_oss",
+  "parameter_count_reported": 4185500000,
+  "training": {
+    "source_repo": "AmanPriyanshu/gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts",
+    "source_format": "safetensors",
+    "source_revision": null,
+    "source_revision_gate": "MUST_RESOLVE_IMMUTABLE_REVISION_BEFORE_TRAINING",
+    "method": "LoRA on trainable original; GGUF inference weights must not be treated as PEFT source",
+    "model_weight_updates_observed": false,
+    "adapter_reload_verified": false,
+    "heldout_improvement_verified": false
+  },
+  "inference": {
+    "source_repo": "cyberjunkee/gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts-Q4_K_M-GGUF",
+    "source_revision": "d3825cfdc1c250b75a2485e9054162bf237fdd01",
+    "filename": "gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts-q4_k_m.gguf",
+    "expected_bytes": 3233019552,
+    "sha256": "38b0279e4294beb54f97ac23051674174b34b2acd6c5e6532860c72298789586",
+    "size_ceiling_bytes": 4000000000,
+    "local_destination_root": "D:\\VERA\\Models",
+    "local_download_verified": false,
+    "performance_verified": false
+  },
+  "integration": {
+    "older_model_untouched": "vera-local:latest",
+    "existing_glm24b_candidate_untouched": true,
+    "portal_admission": "HOLD",
+    "authority": "COGNITION_ONLY_NO_TOOL_OR_MEMORY_WRITE_AUTHORITY",
+    "no_automatic_provider_selection": true
+  },
+  "training_budget": {
+    "hf_jobs_max_authorized_usd": 6,
+    "paid_job_spend_usd_verified": 0,
+    "provider_job_id": null,
+    "runtime_budget_guard_required": true,
+    "artifact_persistence_required": true
+  },
+  "references": {
+    "acquisition_review": "https://github.com/thebrazenbeard/labyrinth/pull/57",
+    "trainable_checkpoint": "https://huggingface.co/AmanPriyanshu/gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts",
+    "inference_checkpoint": "https://huggingface.co/cyberjunkee/gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts-Q4_K_M-GGUF"
+  }
+}
