@@ -36,10 +36,13 @@
   },
   "training_budget": {
     "hf_jobs_max_authorized_usd": 6,
-    "paid_job_spend_usd_verified": 0,
+    "paid_job_spend_usd_verified": null,
     "provider_job_id": null,
     "runtime_budget_guard_required": true,
-    "artifact_persistence_required": true
+    "artifact_persistence_required": true,
+    "gpu_training_spend_usd_observed": 0,
+    "cpu_preflight_job_id": "6ae365de5ddcdc0830261828",
+    "storage_write_permission_verified": false
   },
   "references": {
     "acquisition_review": "https://github.com/thebrazenbeard/labyrinth/pull/57",
