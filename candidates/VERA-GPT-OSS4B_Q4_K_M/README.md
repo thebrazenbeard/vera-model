@@ -42,21 +42,22 @@ is not evidence of an experience or independently validated self-model.
 5. Do not merge/quantize/install the resulting model until the identity,
    provenance, honesty, general reasoning and regression gates pass.
 
-Lappy has 32 GB physical RAM and 4 GB VRAM, but current live free VRAM was
-only 828 MB and free RAM around 8 GB. It is not a qualified 4B training host in
-that state. The user authorized at most **USD 6 total paid Hugging Face compute**
-and no destructive interruption of active workloads.
+Host capacity cannot be inferred from the model's parameter count alone.
+Before choosing a training runtime, measure available RAM, VRAM, storage,
+software compatibility and concurrent workload occupancy. A suitable inference
+host is not automatically a suitable optimizer host. Training must not interrupt
+unrelated workloads.
 
-A Hugging Face L4 Jobs instance is listed at USD 0.80/hour. Bound every job
-by a hard timeout and account for all charges. **The initial storage mount
-`hf://buckets/thebrazenbeard/jobs-artifacts` returned 404.** Jobs delete
-their ephemeral files on exit, so do not start a GPU training job without an
-accessible read/write bucket or proven write-permitted Hub repository and
-post-run artifact readback. No paid training occurred at this point.
+For paid or ephemeral GPU jobs, establish an explicit cost ceiling, hard
+timeout, and independently verified artifact destination **before** starting.
+Require a successful test write and post-run readback from a bucket or a
+write-permitted model repository; otherwise a completed job can still lose its
+adapter on exit. This repository does not establish a paid-training execution
+or persisted adapter artifact.
 
 ## Release and runtime holds
 
-- Current `vera-local:latest` remains untouched.
+- Any pre-existing local runtime is outside this candidate's deployment scope.
 - The GLM24B route remains `HOLD`.
 - New GPT-OSS4B candidate remains `HOLD` with `COGNITION_ONLY` scope.
 - No automatic provider selection, protected effects, model promotion or
