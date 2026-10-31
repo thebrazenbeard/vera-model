@@ -1,29 +1,35 @@
-# vera-model — local model candidates and qualification contracts
+# vera-model — Qwen3.5 Vera and historical local-model candidates
 
-`vera-model` is a source repository for **optional local-language-model candidates**. It records model provenance, checks pinned artifacts, provides a bounded read-only advisory interface, and keeps provider admission separate from model availability. It does **not** distribute model weights or grant a model identity, memory access, tools, or permission to change a system.
+`vera-model` records the **Qwen3.5 Vera** primary development direction, historical alternatives, artifact provenance, and qualification contracts. It does **not** distribute model weights or grant model identity, memory access, tools, or permission to change a system. Selecting a development direction is not deploying an inference provider.
 
-## What's included
+## Primary Vera model: Qwen3.5 Vera V10R3R9
 
-| Candidate | Source artifacts | Current release boundary |
+The selected training lineage is the previously trained **Qwen3.5 Vera V10R3R9 LoRA**, not GPT-OSS4B or Dolphin/GLM24B. The [primary model record](contracts/primary-model.json) and [Qwen candidate README](candidates/VERA-QWEN35-4B/README.md) distinguish the historical R9 adapter from the planned R10 continuation. [The decision record](https://github.com/thebrazenbeard/vera-model/pull/1) explicitly held Dolphin training and retained its independent-minded style only as behavioral inspiration.
+
+**The trained adapter is not itself a GGUF base model.** The R9 artifact is reported as a separately trained LoRA adapter (historical SHA-256 in the primary record). A GGUF is a format commonly used to serve a quantized base or a separately converted LoRA adapter; neither an adapter-bearing merged Qwen GGUF nor a verified active Qwen-plus-R9 adapter runtime is established by this repository. See [how adapters are applied](candidates/VERA-QWEN35-4B/ADAPTER_APPLICATION.md).
+
+R10 was proposed as a bounded continuation of R9 but its first optimizer launch was held before training because of Windows memory/pagefile pressure. Current TrainingDay custody/qualification source PRs do not prove an R10 weight update, LoRA reload, improved general reasoning, or production admission. **Primary development selection is not a release qualification.**
+
+## Historical / non-primary alternatives
+
+| Candidate | Preserved source | Current decision |
 | --- | --- | --- |
-| Dolphin-Mistral-GLM-4.7-Flash-24B, IQ2_XS GGUF | `contracts/model-lineage.json`, `runtime/`, `integration/portal_advisory_worker.py` | Pinned local inference candidate; behavioral qualification and provider route **HOLD** |
-| VERA-GPT-OSS4B Q4_K_M | `candidates/VERA-GPT-OSS4B_Q4_K_M/` | Provenance and training handoff only; neural training and deployment **not verified** |
+| Dolphin-Mistral-GLM-4.7-Flash-24B IQ2_XS GGUF | `contracts/model-lineage.json`, `runtime/`, `integration/portal_advisory_worker.py` | Historical local advisory experiment; behavioral inspiration only for primary Vera training; **not** the primary optimizer target |
+| VERA-GPT-OSS4B Q4_K_M | [`candidates/VERA-GPT-OSS4B_Q4_K_M/`](candidates/VERA-GPT-OSS4B_Q4_K_M/) | Shelved experimental alternative; no verified neural training or deployment |
 
-The first candidate's pinned GGUF is `7,207,034,784` bytes with SHA-256 `563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba`. Its donor and quantizer references are recorded in `contracts/model-lineage.json`. The very low-bit quantization may reduce model quality; a verified file hash is **not** a reasoning-quality result.
+Historical files and fingerprints are deliberately retained for audit, compatibility and rollback. The Dolphin IQ2_XS file fingerprint is `7,207,034,784` bytes / SHA-256 `563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba`. A matching hash is not a reasoning-quality result. Reopening either alternative as a primary model requires an explicit new decision and fresh qualification.
 
-The second candidate is independent of the first. Its [candidate README](candidates/VERA-GPT-OSS4B_Q4_K_M/README.md) records distinct pinned sources, training prerequisites, and release holds. A quantized inference GGUF must not be mistaken for a trainable PEFT base.
-
-## Interfaces and ownership
+## Existing implemented interfaces (legacy Dolphin-only)
 
 - `runtime/local_model.py`: standard-library Python client for a fixed local OpenAI-compatible endpoint. It checks the exact model alias, bounds prompts and response size, and rejects tool-call responses.
-- `runtime/start-local.ps1` and `runtime/stop-local.ps1`: manually start/stop the dedicated Windows `llama.cpp` sidecar. The launcher verifies GGUF size and SHA-256 before starting it.
+- `runtime/start-local.ps1` and `runtime/stop-local.ps1`: manually start/stop the **Dolphin** Windows `llama.cpp` sidecar. The launcher verifies its GGUF size and SHA-256 before starting it; it neither loads Qwen nor passes `--lora`.
 - `runtime/ask_vera.py` and `runtime/smoke_local.py`: manual, cognition-only advisory and smoke checks; their output is not a release qualification.
 - `contracts/veraos-provider.json`: a **held** provider proposal; this file does not activate a route.
 - `integration/portal_advisory_worker.py`: a held process-worker adapter that refuses activation without separately reviewed qualification and explicit route selection.
 
 Governed identity/runtime, provider selection, execution, and memory authorization belong to their respective host components. No model response is itself an authorization or verification receipt.
 
-## Local evaluation (Windows reference implementation)
+## Historical Dolphin local evaluation (Windows reference implementation)
 
 The repository currently ships a **Windows PowerShell launcher**, not a platform-independent installer. It assumes `llama-server.exe` from `llama.cpp` is on `PATH`, Windows networking commands are available, the pinned GGUF is present, and the chosen Vulkan device/offload settings are supported.
 

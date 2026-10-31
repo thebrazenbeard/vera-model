@@ -1,0 +1,36 @@
+{
+  "schema": "vera-model.primary-selection.v1",
+  "selected_family": "Qwen3.5",
+  "selected_development_lineage": "Vera V10R3R9 LoRA",
+  "selection_state": "PRIMARY_DEVELOPMENT_NOT_DEPLOYED",
+  "decision_source": "https://github.com/thebrazenbeard/vera-model/pull/1",
+  "historical_r9_adapter": {
+    "artifact_type": "PEFT_LORA_ADAPTER_NOT_GGUF_BASE",
+    "sha256_reported": "dc2a67a66c16c28a3b8cd5295a3e7a6ba243fb12ffb181540a0066b32047e495",
+    "provenance_class": "HISTORICAL_PR_RECEIPT_NOT_CURRENT_ARTIFACT_READBACK",
+    "artifact_bytes_in_this_repository": false,
+    "exact_base_and_tokenizer_binding_verified_here": false,
+    "active_inference_load_verified_here": false
+  },
+  "r10_continuation": {
+    "status": "HELD_BEFORE_OPTIMIZER",
+    "proposed_identity_and_judgment_examples": 32,
+    "proposed_general_skill_examples": 32,
+    "proposed_steps": 8,
+    "completed_optimizer_update_verified": false,
+    "adapter_reload_verified": false,
+    "heldout_improvement_verified": false
+  },
+  "gguf_serving": {
+    "selected_gguf_sha256": null,
+    "adapter_converted_to_gguf_verified": false,
+    "adapter_merged_into_gguf_verified": false,
+    "llama_cpp_qwen_lora_load_verified": false
+  },
+  "provider_admission": "HOLD",
+  "protected_effect_authority": false,
+  "historical_nonprimary_candidates": [
+    "Dolphin-Mistral-GLM-4.7-Flash-24B",
+    "VERA-GPT-OSS4B Q4_K_M"
+  ]
+}

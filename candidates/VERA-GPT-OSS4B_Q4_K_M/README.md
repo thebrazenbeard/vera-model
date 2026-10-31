@@ -1,6 +1,8 @@
-# VERA-GPT-OSS4B Q4_K_M — independent Vera candidate
+# VERA-GPT-OSS4B Q4_K_M — shelved historical alternative
 
-**Status: SOURCE PREPARED / NEURAL TRAINING NOT VERIFIED / DEPLOYMENT HOLD.**
+**Selection: SHELVED / NOT PRIMARY. Status: SOURCE PREPARED / NEURAL TRAINING NOT VERIFIED / DEPLOYMENT HOLD.**
+
+The current primary development lineage is [Qwen3.5 Vera V10R3R9](../VERA-QWEN35-4B/README.md). This candidate remains as immutable-source provenance and optional historical research, not a standing instruction to spend GPU time or resume GPT-OSS4B training. Re-selection requires an explicit new decision.
 
 This is a second candidate in `vera-model`. The existing Dolphin/GLM24B
 advisory model and its provider contract remain unchanged. This document is
