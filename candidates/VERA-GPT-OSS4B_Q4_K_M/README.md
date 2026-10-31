@@ -1,10 +1,22 @@
 # VERA-GPT-OSS4B Q4_K_M — independent Vera candidate
 
-**Status: SOURCE PREPARED / NEURAL TRAINING NOT VERIFIED / DEPLOYMENT HOLD.**
+**Status: LAPPY GGUF FILE VERIFIED / NEURAL TRAINING NOT VERIFIED / DEPLOYMENT HOLD.**
 
 This is a second candidate in `vera-model`. The existing Dolphin/GLM24B
 advisory model and its provider contract remain unchanged. This document is
-a source and training handoff, not a model file or release.
+a source and training handoff, not a model file or release. The model file is
+stored separately on Lappy; a hash-verified local file is not evidence of
+good inference, usable reasoning, neural training or deployment.
+
+## Lappy acquisition receipt (2026-10-29)
+
+- **Host**: `LAPPY`; **source class**: `REAL_SYSTEM_PROBE`.
+- **Path**: `D:\VERA\models\gguf\vera-gpt-oss4b-q4-k-m\gpt-oss-4.2b-specialized-all-pruned-moe-only-4-experts-q4_k_m.gguf`.
+- **Length**: `3,233,019,552` bytes; **SHA-256**: `38b0279e4294beb54f97ac23051674174b34b2acd6c5e6532860c72298789586`.
+- **Verified**: `2026-10-29T17:45:26Z` using PowerShell `Get-Item` and `Get-FileHash`, with no file modification.
+- **Limits**: Historical point-in-time custody, not live file monitoring, BF16
+  donor availability, basic reasoning competence, LoRA training, or provider
+  route admission. The candidate remains `HOLD`.
 
 ## Exact provenance
 
