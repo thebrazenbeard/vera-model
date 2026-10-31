@@ -1,60 +1,72 @@
-# Vera Model: Dolphin-Mistral-GLM-4.7-Flash-24B (Lappy candidate)
+# Vera Model — local advisory candidates and provider gates
 
-This **separate** local-development candidate corresponds to the actual description of the private `thebrazenbeard/vera-model` repository, not the Qwen R9 lineage.
+**A source-visible reference toolkit for verifying local language-model files, obtaining bounded read-only advice, and preparing a separately governed provider integration.**
 
-## Donor and quantization
-- Fine-tuned source: `DavidAU/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored`.
-- GGUF quantization: `mradermacher/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored-i1-GGUF`.
-- Pinned GGUF Git revision `37bdf0317324e9e5a9ad43065e573cf37fd6653f`.
-- Type `i1-IQ2_XS`, byte size `7207034784`, expected SHA-256 `563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba`.
-- Lappy: i5-11400H 6 cores/12 threads, ~32 GiB physical RAM, RTX 3050 4 GiB, Windows, local llama.cpp Vulkan runtime.
-- The very low-bit quantization may substantially impair instruction following and reasoning. Benchmark against alternatives before treating it as a coordination engine.
+Vera Model is not a pretrained model release, a hosted inference service, or an authorization system. The repository contains Python and PowerShell reference code, pinned model-lineage records, a held advisory-worker contract, and an additional source-only training candidate. **Model weights and trained adapters are not included.** The project is useful to developers evaluating how a local model can supply *advice* without acquiring authority to act.
 
-## Runtime
-`runtime/start-local.ps1` verifies the complete GGUF bytes and starts a separate local llama.cpp service at `http://127.0.0.1:8097/v1` with explicit NVIDIA Vulkan offload and an automatically generated local-only API key. It does **not** replace existing Vera, Ollama, or P.O.R.T.A.L. services. It is launched manually; never as Windows autostart by this package.
+## What is implemented
 
-The pure-stdlib `runtime/local_model.py` validates the pinned bytes, verifies the exact model alias, and makes a bounded chat completion request without tool-call access. It is **cognition only**.
+| Component | Source | Current boundary |
+| --- | --- | --- |
+| Pinned local model verification | [`runtime/local_model.py`](runtime/local_model.py) | Checks one expected GGUF byte length and SHA-256; requires a separately acquired file. |
+| Bounded inference client | [`runtime/local_model.py`](runtime/local_model.py) | Uses an OpenAI-compatible loopback endpoint, an API key, a fixed model alias, prompt/token bounds, and rejects returned tool calls. |
+| Manual local commands | [`runtime/ask_vera.py`](runtime/ask_vera.py), [`runtime/smoke_local.py`](runtime/smoke_local.py) | Provide advisory queries and diagnostic receipts when the matching local service is already running. |
+| Advisory worker | [`integration/portal_advisory_worker.py`](integration/portal_advisory_worker.py) | Validates a bounded no-effect packet and writes a `HELD` receipt by default; the command-line entrypoint does **not** admit or activate a provider. |
+| Provider and model records | [`contracts/veraos-provider.json`](contracts/veraos-provider.json), [`contracts/model-lineage.json`](contracts/model-lineage.json) | Describe a **held**, cognition-only candidate, not an independently attested or selected production route. |
+| Experimental second candidate | [`candidates/VERA-GPT-OSS4B_Q4_K_M/README.md`](candidates/VERA-GPT-OSS4B_Q4_K_M/README.md) | Includes source/quantization provenance, a training proposal, and a storage-permission gate; no new trained weights or adapter are verified. |
 
-## Integration and control ownership
-- VeraOS and Vera Mono: governed runtime and identity.
-- Rezon: reasoning architecture.
-- P.O.R.T.A.L.: provider selection, portfolio planning, admission and scheduling.
-- Project Runner: fenced execution, receipts, reconciliation and verification.
-- GLM24B: optional advisory cognition, **not** ambient protected-effect authority.
+## Verify the source without downloading a model
 
-`contracts/veraos-provider.json` is a **HOLD** candidate. The `integration/portal_advisory_worker.py` implements the existing `PORTAL_PROCESS_WORKER_V1` receipt form but refuses route activation until a separately reviewed exact-subject qualification is admitted. It must not be selected merely because its HTTP service is reachable.
+The source checks use Python's standard library. From a checkout, run:
 
-## Safety and evidence
-- No repo mutations, shell commands, browser access, memory writes, or project actions are exposed to model output.
-- No transfer of credentials or private training corpora.
-- All generated advisory content needs source and currentness checks before any plan or effect.
-- Model download, checksum, model load, inference, behavioral evaluation, qualification, route selection, and sustained usability are **separate** proof stages.
-- Repo Git push, deployments, and live provider cutover have **not** been performed by this staging package.
-
-
-## Lappy on-demand commands (tested with Windows PowerShell)
-
-Launch the separately pinned model:
-
-```powershell
-& 'D:\VERA\portal-task-state\vera-model-glm24b-lappy-20261012\runtime\start-local.ps1'
+```sh
+python3 -m unittest discover -s tests -v
+python3 runtime/ask_vera.py --help
+python3 runtime/smoke_local.py --help
+python3 integration/portal_advisory_worker.py --help
 ```
 
-Ask for local read-only advice (model service must be running):
+These tests exercise size/hash rejection, API-alias checks, prompt and response restrictions, held admission, no-effect receipts, and workspace-startup safeguards through mocked or local data. They **do not** load a 24B model, test actual reasoning quality, authenticate a provider, or validate a physical machine.
 
-```powershell
-& 'C:\ProgramData\ProRun\model-env\Scripts\python.exe' 'D:\VERA\portal-task-state\vera-model-glm24b-lappy-20261012\runtime\ask_vera.py' 'Review a portfolio decision without performing any changes.'
+For a portable Python integration, import the bounded client and explicitly supply a key file controlled by your application:
+
+```python
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path("runtime").resolve()))
+from local_model import advise, probe_model, read_key
+
+key = read_key(Path("path/to/local-api-key.txt"))
+probe_model(key)
+print(advise("Which assumptions in this plan need checking?", key, max_tokens=120))
 ```
 
-Stop only this model instance to reclaim RAM:
+That example requires a separately started, authorized `llama.cpp`-compatible endpoint at `127.0.0.1:8097` serving the expected `vera-dolphin-glm24b-iq2xs` alias. Both the endpoint and the key are deployment inputs; neither is provided by this repository. The client checks an advertised alias, **not a cryptographic binding between provider, model weights, and host authority**.
 
-```powershell
-& 'D:\VERA\portal-task-state\vera-model-glm24b-lappy-20261012\runtime\stop-local.ps1'
-```
+The bundled [`runtime/start-local.ps1`](runtime/start-local.ps1) and [`runtime/stop-local.ps1`](runtime/stop-local.ps1) are **Windows-specific reference launchers** with a pinned model location, Vulkan device setting, resource flags, and a dedicated port. Inspect and adapt those settings for your own environment before using the launcher; they are not generic installation defaults. The launch script verifies the specified local GGUF before starting an isolated, loopback-only sidecar and does not install an autostart service.
 
-The 2026-10-12 benchmark with 14 GPU-offloaded layers produced 20 tokens in 15.25 seconds end-to-end, about 2.39 generated tokens/s. This is a single test, not a throughput guarantee. Model selection in VeraOS/P.O.R.T.A.L. is **still HOLD** until separately reviewed qualification and explicit route binding. The running local sidecar is not proof of production deployment.
+## Candidate provenance and qualification
 
+| Candidate | Source-backed state | Not established |
+| --- | --- | --- |
+| Dolphin-Mistral-GLM 4.7 Flash 24B, IQ2_XS GGUF | [Pinned donor and quantization lineage](contracts/model-lineage.json) records expected **7,207,034,784 bytes** and SHA-256; [historical local smoke](state/20261012-inference-baseline.json) and [14-layer offload receipt](state/20261012-ngl14-inference.json) record bounded inference. | New-host readiness, sustained performance, behavioral qualification, route admission, model ownership, or protected-effect authority. The low-bit quantization may materially affect quality. |
+| VERA-GPT-OSS4B Q4_K_M | [Candidate manifest](candidates/VERA-GPT-OSS4B_Q4_K_M/manifest.json) pins donor and inference artifact identities; [training/storage gate](candidates/VERA-GPT-OSS4B_Q4_K_M/TRAINING_JOB_GATE.md) records the pre-training hold. | Download, neural optimizer step, adapter persistence, held-out improvement, qualification, or deployment for this candidate. |
 
-## Workspace startup safety (source scope)
+The two candidates are **separate lineages**. A pinned hash, a model that responds to an HTTP probe, or an output snippet does not imply the model has been trained here, selected by a host, or demonstrated useful across workloads. The historical records are evidence of those bounded observations on their dates, not claims about a running service now. Upstream model and font asset licenses must be independently reviewed before redistribution; this repository has no root `LICENSE` file.
 
-Removed the concealed VS Code `folderOpen` task and JavaScript pseudo-font `public/fonts/fa-solid.lkf`, and set automatic tasks to `"off"` on current source. Static tests and read-only CI guard this known startup vector. Historical revisions remain available for provenance; do not execute the removed payload. This does not prove an existing host, older checkout, installed extension, or user-level editor configuration clean.
+The [experimental storage marker utility](candidates/VERA-GPT-OSS4B_Q4_K_M/storage_gate.py) supports write/read verification on a caller-selected directory. A real cross-job persistence claim needs **separate jobs**, durable authorized storage, and independent readback after the first job exits. Running the helper twice in one process or directory does not establish that external gate.
+
+## Security and integration boundary
+
+- The model-facing client exposes **no shell, repository mutation, browser, canonical-memory write, or tool-call interface**. Model-generated text is untrusted advisory output.
+- The `PORTAL_WORKER_RECEIPT_V1` contract recognizes only `HELD` and `SUCCEEDED_NO_EFFECT`; it does not claim an executed external action. The default command-line worker remains **HELD** even if an unreviewed qualification document claims `PASS`.
+- The provider record's permission flags are all false. Host-owned authorization would require separately verified subject, provider, consent, effect, fencing, replay, and reconciliation controls outside this model package.
+- Neither a locally generated API key nor a caller-supplied model alias proves the runtime's immutable provider identity.
+- The [workspace startup guard](tests/test_workspace_startup_safety.py) checks the tracked VS Code configuration. Passing it does not certify historic checkouts, user-level editor settings, extensions, or a live host.
+
+## Rights and contribution status
+
+This public repository has **no tracked root license**. Public readability does not imply general permission to redistribute the code, model weights, or included third-party assets. Consult the upstream donor and quantization licenses and obtain appropriate permissions before publishing derivative software or artifacts. No trained model, API key, GGUF, or other private data should be committed here.
+
+The repository separates **source review**, **artifact verification**, **actual local inference**, **behavioral evaluation**, **provider qualification**, and **host route activation**. Review each stage on its own evidence; do not promote a reference contract or old smoke receipt into live operational authority.
