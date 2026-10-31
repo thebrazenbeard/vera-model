@@ -3,6 +3,17 @@
   "selected_family": "Qwen3.5",
   "selected_development_lineage": "Vera V10R3R9 LoRA",
   "selection_state": "PRIMARY_DEVELOPMENT_NOT_DEPLOYED",
+  "intended_local_serving": {
+    "artifact": "VERIFIED_MERGED_QUANTIZED_GGUF",
+    "preferred_runtime": "KoboldCpp",
+    "preferred_interface_repository": "thebrazenbeard/v-e-r-a",
+    "future_os_consumer": "VeraOS",
+    "standalone_llama_cpp": "OPTIONAL_BENCHMARK_COMPARATOR_NOT_SELECTED_RUNTIME",
+    "merged_gguf_exists_verified_here": false,
+    "koboldcpp_inference_verified_here": false,
+    "v_e_r_a_integration_verified_here": false,
+    "veraos_provider_admission_verified_here": false
+  },
   "decision_source": "https://github.com/thebrazenbeard/vera-model/pull/1",
   "historical_r9_adapter": {
     "artifact_type": "PEFT_LORA_ADAPTER_NOT_GGUF_BASE",

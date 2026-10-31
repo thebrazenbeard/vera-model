@@ -23,6 +23,16 @@ class PrimarySelectionTests(unittest.TestCase):
         self.assertEqual(p["provider_admission"], "HOLD")
         self.assertIs(p["protected_effect_authority"], False)
 
+    def test_intended_serving_is_koboldcpp_gguf_into_vera_interface(self):
+        target = self.primary["intended_local_serving"]
+        self.assertEqual(target["artifact"], "VERIFIED_MERGED_QUANTIZED_GGUF")
+        self.assertEqual(target["preferred_runtime"], "KoboldCpp")
+        self.assertEqual(target["preferred_interface_repository"], "thebrazenbeard/v-e-r-a")
+        self.assertEqual(target["future_os_consumer"], "VeraOS")
+        self.assertIn("BENCHMARK_COMPARATOR", target["standalone_llama_cpp"])
+        for field in ("merged_gguf_exists_verified_here", "koboldcpp_inference_verified_here", "v_e_r_a_integration_verified_here", "veraos_provider_admission_verified_here"):
+            self.assertIs(target[field], False)
+
     def test_adapter_cannot_be_mislabeled_as_gguf_or_verified(self):
         a = self.primary["historical_r9_adapter"]
         self.assertEqual(a["artifact_type"], "PEFT_LORA_ADAPTER_NOT_GGUF_BASE")
@@ -54,6 +64,8 @@ class PrimarySelectionTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf8")
         self.assertIn("Qwen3.5 Vera V10R3R9", readme)
         self.assertIn("Historical / non-primary alternatives", readme)
+        self.assertIn("KoboldCpp", readme)
+        self.assertIn("v-e-r-a", readme)
 
 
 if __name__ == "__main__":

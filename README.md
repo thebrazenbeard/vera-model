@@ -6,7 +6,7 @@
 
 The selected training lineage is the previously trained **Qwen3.5 Vera V10R3R9 LoRA**, not GPT-OSS4B or Dolphin/GLM24B. The [primary model record](contracts/primary-model.json) and [Qwen candidate README](candidates/VERA-QWEN35-4B/README.md) distinguish the historical R9 adapter from the planned R10 continuation. [The decision record](https://github.com/thebrazenbeard/vera-model/pull/1) explicitly held Dolphin training and retained its independent-minded style only as behavioral inspiration.
 
-**The trained adapter is not itself a GGUF base model.** The R9 artifact is reported as a separately trained LoRA adapter (historical SHA-256 in the primary record). A GGUF is a format commonly used to serve a quantized base or a separately converted LoRA adapter; neither an adapter-bearing merged Qwen GGUF nor a verified active Qwen-plus-R9 adapter runtime is established by this repository. See [how adapters are applied](candidates/VERA-QWEN35-4B/ADAPTER_APPLICATION.md).
+**Target: a Qwen3.5 Vera GGUF served locally by KoboldCpp**, consumed first through the [`v-e-r-a` interface](https://github.com/thebrazenbeard/v-e-r-a), and later through a separately qualified VeraOS provider. The trained R9 LoRA is not itself a GGUF base model. The intended single-file release requires exact-base adapter merging, GGUF conversion, quantization and independent validation; no completed Vera GGUF or active KoboldCpp/V-E-R-A route is verified here. The [adapter procedure](candidates/VERA-QWEN35-4B/ADAPTER_APPLICATION.md) also describes temporary KoboldCpp `--lora` testing. Standalone `llama-server` is an optional comparator, not the selected interface/runtime design.
 
 R10 was proposed as a bounded continuation of R9 but its first optimizer launch was held before training because of Windows memory/pagefile pressure. Current TrainingDay custody/qualification source PRs do not prove an R10 weight update, LoRA reload, improved general reasoning, or production admission. **Primary development selection is not a release qualification.**
 
@@ -22,7 +22,7 @@ Historical files and fingerprints are deliberately retained for audit, compatibi
 ## Existing implemented interfaces (legacy Dolphin-only)
 
 - `runtime/local_model.py`: standard-library Python client for a fixed local OpenAI-compatible endpoint. It checks the exact model alias, bounds prompts and response size, and rejects tool-call responses.
-- `runtime/start-local.ps1` and `runtime/stop-local.ps1`: manually start/stop the **Dolphin** Windows `llama.cpp` sidecar. The launcher verifies its GGUF size and SHA-256 before starting it; it neither loads Qwen nor passes `--lora`.
+- `runtime/start-local.ps1` and `runtime/stop-local.ps1`: manually start/stop the **historical Dolphin** Windows `llama.cpp` sidecar. The launcher verifies its GGUF size and SHA-256 before starting it; it neither loads Qwen nor passes `--lora`. This legacy implementation does **not** change the selected KoboldCpp target.
 - `runtime/ask_vera.py` and `runtime/smoke_local.py`: manual, cognition-only advisory and smoke checks; their output is not a release qualification.
 - `contracts/veraos-provider.json`: a **held** provider proposal; this file does not activate a route.
 - `integration/portal_advisory_worker.py`: a held process-worker adapter that refuses activation without separately reviewed qualification and explicit route selection.
