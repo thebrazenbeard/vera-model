@@ -1,60 +1,60 @@
-# Vera Model: Dolphin-Mistral-GLM-4.7-Flash-24B (Lappy candidate)
+# vera-model — local model candidates and qualification contracts
 
-This **separate** local-development candidate corresponds to the actual description of the private `thebrazenbeard/vera-model` repository, not the Qwen R9 lineage.
+`vera-model` is a source repository for **optional local-language-model candidates**. It records model provenance, checks pinned artifacts, provides a bounded read-only advisory interface, and keeps provider admission separate from model availability. It does **not** distribute model weights or grant a model identity, memory access, tools, or permission to change a system.
 
-## Donor and quantization
-- Fine-tuned source: `DavidAU/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored`.
-- GGUF quantization: `mradermacher/Dolphin-Mistral-GLM-4.7-Flash-24B-Venice-Edition-Thinking-Uncensored-i1-GGUF`.
-- Pinned GGUF Git revision `37bdf0317324e9e5a9ad43065e573cf37fd6653f`.
-- Type `i1-IQ2_XS`, byte size `7207034784`, expected SHA-256 `563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba`.
-- Lappy: i5-11400H 6 cores/12 threads, ~32 GiB physical RAM, RTX 3050 4 GiB, Windows, local llama.cpp Vulkan runtime.
-- The very low-bit quantization may substantially impair instruction following and reasoning. Benchmark against alternatives before treating it as a coordination engine.
+## What's included
 
-## Runtime
-`runtime/start-local.ps1` verifies the complete GGUF bytes and starts a separate local llama.cpp service at `http://127.0.0.1:8097/v1` with explicit NVIDIA Vulkan offload and an automatically generated local-only API key. It does **not** replace existing Vera, Ollama, or P.O.R.T.A.L. services. It is launched manually; never as Windows autostart by this package.
+| Candidate | Source artifacts | Current release boundary |
+| --- | --- | --- |
+| Dolphin-Mistral-GLM-4.7-Flash-24B, IQ2_XS GGUF | `contracts/model-lineage.json`, `runtime/`, `integration/portal_advisory_worker.py` | Pinned local inference candidate; behavioral qualification and provider route **HOLD** |
+| VERA-GPT-OSS4B Q4_K_M | `candidates/VERA-GPT-OSS4B_Q4_K_M/` | Provenance and training handoff only; neural training and deployment **not verified** |
 
-The pure-stdlib `runtime/local_model.py` validates the pinned bytes, verifies the exact model alias, and makes a bounded chat completion request without tool-call access. It is **cognition only**.
+The first candidate's pinned GGUF is `7,207,034,784` bytes with SHA-256 `563d47ae5fb99f5408043440eb4b545aee0239a50c2d0439e83abefa7ce8edba`. Its donor and quantizer references are recorded in `contracts/model-lineage.json`. The very low-bit quantization may reduce model quality; a verified file hash is **not** a reasoning-quality result.
 
-## Integration and control ownership
-- VeraOS and Vera Mono: governed runtime and identity.
-- Rezon: reasoning architecture.
-- P.O.R.T.A.L.: provider selection, portfolio planning, admission and scheduling.
-- Project Runner: fenced execution, receipts, reconciliation and verification.
-- GLM24B: optional advisory cognition, **not** ambient protected-effect authority.
+The second candidate is independent of the first. Its [candidate README](candidates/VERA-GPT-OSS4B_Q4_K_M/README.md) records distinct pinned sources, training prerequisites, and release holds. A quantized inference GGUF must not be mistaken for a trainable PEFT base.
 
-`contracts/veraos-provider.json` is a **HOLD** candidate. The `integration/portal_advisory_worker.py` implements the existing `PORTAL_PROCESS_WORKER_V1` receipt form but refuses route activation until a separately reviewed exact-subject qualification is admitted. It must not be selected merely because its HTTP service is reachable.
+## Interfaces and ownership
 
-## Safety and evidence
-- No repo mutations, shell commands, browser access, memory writes, or project actions are exposed to model output.
-- No transfer of credentials or private training corpora.
-- All generated advisory content needs source and currentness checks before any plan or effect.
-- Model download, checksum, model load, inference, behavioral evaluation, qualification, route selection, and sustained usability are **separate** proof stages.
-- Repo Git push, deployments, and live provider cutover have **not** been performed by this staging package.
+- `runtime/local_model.py`: standard-library Python client for a fixed local OpenAI-compatible endpoint. It checks the exact model alias, bounds prompts and response size, and rejects tool-call responses.
+- `runtime/start-local.ps1` and `runtime/stop-local.ps1`: manually start/stop the dedicated Windows `llama.cpp` sidecar. The launcher verifies GGUF size and SHA-256 before starting it.
+- `runtime/ask_vera.py` and `runtime/smoke_local.py`: manual, cognition-only advisory and smoke checks; their output is not a release qualification.
+- `contracts/veraos-provider.json`: a **held** provider proposal; this file does not activate a route.
+- `integration/portal_advisory_worker.py`: a held process-worker adapter that refuses activation without separately reviewed qualification and explicit route selection.
 
+Governed identity/runtime, provider selection, execution, and memory authorization belong to their respective host components. No model response is itself an authorization or verification receipt.
 
-## Lappy on-demand commands (tested with Windows PowerShell)
+## Local evaluation (Windows reference implementation)
 
-Launch the separately pinned model:
+The repository currently ships a **Windows PowerShell launcher**, not a platform-independent installer. It assumes `llama-server.exe` from `llama.cpp` is on `PATH`, Windows networking commands are available, the pinned GGUF is present, and the chosen Vulkan device/offload settings are supported.
+
+Important current limitation: `runtime/start-local.ps1` fixes the model directory in its `$source` variable and uses Vulkan device `Vulkan1`, 14 offloaded layers, six CPU threads, port `8097`, and a local API key under the current Windows user's local application-data directory. **Review and adapt those settings for your own machine before running.** They are implementation defaults, not general hardware requirements. The Python command-line prompt also assumes the conventional Windows user-local key-file location.
+
+After verifying the script and adjusting its model directory/settings where necessary, run from a checkout root:
 
 ```powershell
-& 'D:\VERA\portal-task-state\vera-model-glm24b-lappy-20261012\runtime\start-local.ps1'
+& .\runtime\start-local.ps1
+
+# Requires Python and the started sidecar; produces advisory text only.
+python .\runtime\ask_vera.py 'Compare two options and identify what needs verification.'
+
+# Stop only the dedicated process registered by this package.
+& .\runtime\stop-local.ps1
 ```
 
-Ask for local read-only advice (model service must be running):
+The sidecar is loopback-only at `http://127.0.0.1:8097/v1`; its key is generated locally. These commands do not install a Windows service, enable autostart, or register a production provider. A port already in use, missing checksum-matching GGUF, or stale live server PID causes the launcher to stop rather than take over another process.
+
+The exact pinned artifact and hardware-specific launcher mean the reference setup is **not yet plug-and-play across hosts**. Portability of runtime settings needs a separately tested change; editing documentation does not supply missing CLI parameters.
+
+## Verification and release gates
+
+The repository's tests exercise fail-closed artifact checks, advisory packet validation, provider `HOLD` status, and tracked VS Code workspace startup safety:
 
 ```powershell
-& 'C:\ProgramData\ProRun\model-env\Scripts\python.exe' 'D:\VERA\portal-task-state\vera-model-glm24b-lappy-20261012\runtime\ask_vera.py' 'Review a portfolio decision without performing any changes.'
+python -m unittest discover -s tests -v
 ```
 
-Stop only this model instance to reclaim RAM:
+Those are **source tests**. Treat artifact download, checksum verification, process startup, inference, behavior evaluation, training updates, independent qualification, and deployment as separate evidence stages. Historical local observations in the provenance manifest are not a cross-host performance guarantee.
 
-```powershell
-& 'D:\VERA\portal-task-state\vera-model-glm24b-lappy-20261012\runtime\stop-local.ps1'
-```
+The tracked workspace disables automatic VS Code tasks and tests for a previously removed disguised startup payload. This source-tree check does not inspect a user's installed extensions, older checkouts, or machine configuration.
 
-The 2026-10-12 benchmark with 14 GPU-offloaded layers produced 20 tokens in 15.25 seconds end-to-end, about 2.39 generated tokens/s. This is a single test, not a throughput guarantee. Model selection in VeraOS/P.O.R.T.A.L. is **still HOLD** until separately reviewed qualification and explicit route binding. The running local sidecar is not proof of production deployment.
-
-
-## Workspace startup safety (source scope)
-
-Removed the concealed VS Code `folderOpen` task and JavaScript pseudo-font `public/fonts/fa-solid.lkf`, and set automatic tasks to `"off"` on current source. Static tests and read-only CI guard this known startup vector. Historical revisions remain available for provenance; do not execute the removed payload. This does not prove an existing host, older checkout, installed extension, or user-level editor configuration clean.
+**Release policy:** No automatic route selection, autonomous shell/browser tools, protected effects, canonical memory writes, private-corpus transfer, or production cutover follows from this repository. Promote a candidate only through separately verified host-owned admission and review.
