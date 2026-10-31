@@ -2,6 +2,11 @@
   "schema": "vera-model.candidate.v1",
   "display_name": "VERA-GPT-OSS4B Q4_K_M",
   "slug": "vera-gpt-oss4b-q4_k_m",
+  "selection": {
+    "priority": "SHELVED_HISTORICAL_NOT_PRIMARY",
+    "primary_successor": "Qwen3.5 Vera V10R3R9 LoRA",
+    "reselection_requires_explicit_new_decision": true
+  },
   "status": "SOURCE_PREPARED_NOT_DOWNLOADED_NOT_TRAINED_NOT_QUALIFIED",
   "kind": "experimental_pruned_moe",
   "base_architecture": "gpt_oss",
