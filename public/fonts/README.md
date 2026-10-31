@@ -1,24 +1,14 @@
-# Fonts Directory
+# Tracked font assets
 
-This directory contains custom fonts for the Blockchain Explorer application.
+This directory contains Font Awesome-style `fa-brands-400`, `fa-regular-400`,
+and `fa-solid-900` assets in several font formats (`eot`, `svg`, `ttf`, `woff`,
+and `woff2`). They are tracked files, not part of the local model inference API.
 
-## Required Font Files
+No `BlockchainFont-*` or `TechMono-*` files are included, and this repository
+does not provide the previously documented Blockchain Explorer UI or a
+`public/index.html` font-loading contract. Applications that use these files
+must supply their own styling and verify applicable font licensing.
 
-The application expects the following font files:
-
-1. **BlockchainFont-Regular.woff2** and **BlockchainFont-Regular.woff**
-   - Regular weight font for the main UI
-
-2. **BlockchainFont-Bold.woff2** and **BlockchainFont-Bold.woff**
-   - Bold weight font for headings
-
-3. **TechMono-Regular.woff2** and **TechMono-Regular.woff**
-   - Monospace font for code and hash displays
-
-## Note
-
-If you don't have custom fonts, the application will fall back to system fonts:
-- BlockchainFont → system sans-serif fonts
-- TechMono → system monospace fonts (Courier New, etc.)
-
-The fonts are referenced in `public/index.html` and will be loaded automatically when available.
+The tracked workspace-startup safety tests also reject disguised executable
+`*.lkf` files in this directory. That static check does not audit a host or
+installed editor extensions.
