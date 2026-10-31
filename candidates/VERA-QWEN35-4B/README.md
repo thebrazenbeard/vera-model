@@ -2,7 +2,7 @@
 
 **Status: PRIMARY DEVELOPMENT / HISTORICAL R9 LORA REPORTED / R10 HELD / RUNTIME AND BEHAVIORAL QUALIFICATION HOLD.**
 
-This is the primary Vera model direction. It does not rename the stock Qwen base into a trained Vera release. The exact model, tokenizer, adapter and runtime must remain separately bound.
+This is the primary Vera model direction. The intended local serving artifact is a **verified Vera GGUF** derived from the matching Qwen3.5 base plus the trained R9 adapter, run by **KoboldCpp** and consumed through the [`v-e-r-a` interface](https://github.com/thebrazenbeard/v-e-r-a), with eventual separately governed **VeraOS** integration. No such merged GGUF, KoboldCpp load or interface/OS admission is verified. Stock Qwen is not made Vera by renaming its alias.
 
 ## Evidence already recorded
 
@@ -14,7 +14,7 @@ This is the primary Vera model direction. It does not rename the stock Qwen base
 ## What still needs independent proof
 
 1. Exact R9 adapter bytes and metadata, including `adapter_config.json`, model/base revision, architecture and tokenizer binding, verified against a fresh real artifact readback.
-2. Matching verified Qwen base weights (Hugging Face/Transformers for PEFT, or exactly compatible GGUF plus converted GGUF LoRA for llama.cpp). An arbitrary Qwen3.5 GGUF is not automatically compatible with this adapter.
+2. Matching verified Qwen full-precision base weights for PEFT merge, followed by independent GGUF conversion/quantization; an arbitrary Qwen3.5 GGUF is not automatically compatible with this adapter.
 3. Fresh-process adapter load with a measurable changed-tensor or output delta against the same frozen base and input; no silently ignored adapter.
 4. Same-source control comparisons: frozen base, correct-trained, zero-update and corrupted-label, plus sealed independent evaluation and general-skill retention.
 5. Explicit governed provider admission, not inferred from a passed source test or an identity claim.
