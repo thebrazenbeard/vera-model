@@ -58,3 +58,14 @@ Those are **source tests**. Treat artifact download, checksum verification, proc
 The tracked workspace disables automatic VS Code tasks and tests for a previously removed disguised startup payload. This source-tree check does not inspect a user's installed extensions, older checkouts, or machine configuration.
 
 **Release policy:** No automatic route selection, autonomous shell/browser tools, protected effects, canonical memory writes, private-corpus transfer, or production cutover follows from this repository. Promote a candidate only through separately verified host-owned admission and review.
+
+## Opt-in explicit behavior-macro weight lens (experimental)
+
+`runtime/behavior_weight_lens.py` compiles **caller-adjudicated binary evidence flags** into an exact affine weight matrix. The macros are advisory signals (`REVIEW_`, `CHECK_`, `ESCALATE_`, `SEARCH_`); they cannot authorize actions or apply corrections. The compiler checks all 32 possible input combinations against an independent interpreter of the stated rules and saves a checksum-bound, write-once output in an existing caller-selected directory. It accepts an optional UTF-8 `--rules-json` input with a bounded grammar.
+
+```powershell
+python .\runtime\behavior_weight_lens.py --output-dir .\scratch-output
+# Directory must exist and contain no files named compiled_macro_weights.json or receipt.json.
+```
+
+This is a transparent **five-input Boolean classifier**, not a pretrained model, a generative model, a GGUF, a tokenizer, or a way to infer or edit the actual weights of a large language model. It does not recognize self-references or evaluate corrections from raw chat text: the caller must independently establish those facts and current authority. An innocent phrase such as *I saw her* is not evidence of third-person self-reference by the assistant. A conflicting user correction is escalated for review, never applied automatically. The underlying small macro-to-affine proof was first developed and tested as an isolated experiment at `D:\VERA\experiments\vera-weightspace-20261105`; importing this narrow capability grants no runtime consumption or qualification.
