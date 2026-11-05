@@ -70,6 +70,7 @@ class CandidateProbeTests(unittest.TestCase):
         self.assertFalse(result["behaviorally_qualified"])
         self.assertIn("--reasoning", run.call_args.args[0])
         self.assertEqual(run.call_args.kwargs["timeout"], 120)
+        self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
 
     def test_timeout_stays_unqualified(self):
         import subprocess
