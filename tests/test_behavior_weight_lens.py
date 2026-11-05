@@ -65,6 +65,34 @@ class BehaviorWeightLensTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "weights invalid"):
             predict(evidence(), compiled)
 
+    def test_caller_mutated_effect_name_rejected_at_prediction_boundary(self):
+        compiled = compile_macros()
+        compiled["macros"][0] = "EXECUTE_DEPLOY"
+        with self.assertRaises(ValueError):
+            predict(evidence(), compiled)
+
+    def test_nonfinite_bias_rejected_at_prediction_boundary(self):
+        compiled = compile_macros()
+        compiled["biases"][0] = float("inf")
+        with self.assertRaises(ValueError):
+            predict(evidence(), compiled)
+
+    def test_mutated_legal_shape_coefficient_rejected_against_embedded_rules(self):
+        compiled = compile_macros()
+        compiled["weights"][0][0] = 1 - compiled["weights"][0][0]
+        with self.assertRaises(ValueError):
+            predict(evidence(), compiled)
+
+    def test_serialized_compiled_blob_round_trip_remains_accepted(self):
+        compiled = json.loads(json.dumps(compile_macros()))
+        self.assertEqual(verify_all(compiled)["passed"], 32)
+
+    def test_mutated_rules_without_recompiling_weights_rejected(self):
+        compiled = compile_macros()
+        compiled["rules"]["CHECK_MUTABLE_CLAIM"]["off"] = ["provenance_unresolved"]
+        with self.assertRaises(ValueError):
+            predict(evidence(), compiled)
+
     def test_macros_are_advisory_only_even_when_caller_authors_rules(self):
         bad = {"APPLY_CORRECTION": {"on": ["user_correction_admitted"], "off": []}}
         with self.assertRaisesRegex(ValueError, "advisory"):
