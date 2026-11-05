@@ -64,7 +64,7 @@ class CandidateProbeTests(unittest.TestCase):
              patch.object(module.shutil, "which", return_value="llama-cli"), \
              patch.object(module.subprocess, "run", return_value=Done()) as run:
             result = module.probe("qwen35-4b-q4-control", Path("any"), execute=True)
-        self.assertEqual(result["status"], "INFERENCE_OBSERVED")
+        self.assertEqual(result["status"], "RUNNER_EXIT_ZERO_UNQUALIFIED")
         self.assertFalse(result["provider_admitted"])
         self.assertFalse(result["effect_authority_granted"])
         self.assertFalse(result["behaviorally_qualified"])
