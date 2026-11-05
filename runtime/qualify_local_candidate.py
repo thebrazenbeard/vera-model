@@ -124,7 +124,7 @@ def probe(
         result.update(status="HOLD", reason="RUNNER_LAUNCH_ERROR")
         return result
     result.update(
-        status="INFERENCE_OBSERVED" if completed.returncode == 0 else "INFERENCE_FAILED",
+        status="RUNNER_EXIT_ZERO_UNQUALIFIED" if completed.returncode == 0 else "RUNNER_FAILED",
         runner=binary, exit_code=completed.returncode,
         selected_gpu_layers=gpu_layers,
         elapsed_s=round(time.monotonic() - before, 2),
@@ -156,7 +156,7 @@ def main() -> int:
     except ValueError as exc:
         parser.error(str(exc))
     print(json.dumps(result, indent=2))
-    return 0 if result["status"] in ("READY_FOR_OPT_IN_LOCAL_PROBE", "INFERENCE_OBSERVED") else 2
+    return 0 if result["status"] in ("READY_FOR_OPT_IN_LOCAL_PROBE", "RUNNER_EXIT_ZERO_UNQUALIFIED") else 2
 
 
 if __name__ == "__main__":
