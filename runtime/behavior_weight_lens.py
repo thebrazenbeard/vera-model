@@ -65,13 +65,20 @@ def compile_macros(rules: dict = RULES) -> dict:
         rows.append(row)
         biases.append(0.5 - len(on))
         names.append(name)
-    return {"features": FEATURES, "macros": names, "weights": rows, "biases": biases}
+    return {
+        "schema": "VERA_BOOLEAN_AFFINE_MACRO_V1",
+        "features": FEATURES, "macros": names, "weights": rows, "biases": biases,
+        "rules": {name: {"on": list(rules[name]["on"]), "off": list(rules[name]["off"])}
+                  for name in sorted(rules)},
+    }
 
 
 def predict(features: tuple[int, ...], compiled: dict) -> dict[str, bool]:
     validate_features(features)
-    if type(compiled) is not dict or set(compiled) != {"features", "macros", "weights", "biases"}:
-        raise ValueError("malformed compiled network")
+    if type(compiled) is not dict or set(compiled) != {
+        "schema", "features", "macros", "weights", "biases", "rules"
+    } or compiled["schema"] != "VERA_BOOLEAN_AFFINE_MACRO_V1":
+        raise ValueError("malformed or unsupported compiled network")
     macros, weights, biases = compiled["macros"], compiled["weights"], compiled["biases"]
     if (tuple(compiled["features"]) != FEATURES or type(macros) is not list
             or type(weights) is not list or type(biases) is not list
@@ -83,6 +90,19 @@ def predict(features: tuple[int, ...], compiled: dict) -> dict[str, bool]:
         raise ValueError("compiled network weights invalid")
     if any(type(bias) not in (float, int) for bias in biases):
         raise ValueError("compiled network biases invalid")
+    # A compiled blob is untrusted input. Recompile its embedded source rules and
+    # compare every normalized field before returning even advisory macro names.
+    # Nonfinite floats reject via allow_nan=False; arbitrary effect names are
+    # rejected by compile_macros before any prediction is produced.
+    try:
+        expected = compile_macros(compiled["rules"])
+        canonical = lambda obj: json.dumps(
+            obj, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        )
+        if canonical(expected) != canonical(compiled):
+            raise ValueError("compiled network diverges from its rules")
+    except (TypeError, KeyError, ValueError, OverflowError) as exc:
+        raise ValueError("forged, nonfinite, or malformed compiled network") from exc
     return {
         macro: sum(w * v for w, v in zip(row, features)) + bias > 0
         for macro, row, bias in zip(macros, weights, biases)

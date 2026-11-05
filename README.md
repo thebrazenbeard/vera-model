@@ -61,7 +61,7 @@ The tracked workspace disables automatic VS Code tasks and tests for a previousl
 
 ## Opt-in explicit behavior-macro weight lens (experimental)
 
-`runtime/behavior_weight_lens.py` compiles **caller-adjudicated binary evidence flags** into an exact affine weight matrix. The macros are advisory signals (`REVIEW_`, `CHECK_`, `ESCALATE_`, `SEARCH_`); they cannot authorize actions or apply corrections. The compiler checks all 32 possible input combinations against an independent interpreter of the stated rules and saves a checksum-bound, write-once output in an existing caller-selected directory. It accepts an optional UTF-8 `--rules-json` input with a bounded grammar.
+`runtime/behavior_weight_lens.py` compiles **caller-adjudicated binary evidence flags** into an exact affine weight matrix. The macros are advisory signals (`REVIEW_`, `CHECK_`, `ESCALATE_`, `SEARCH_`); they cannot authorize actions or apply corrections. The compiler checks all 32 possible input combinations against an independent interpreter of the stated rules and saves a checksum-bound, write-once output in an existing caller-selected directory. Predictions recompile the embedded symbolic rules, reject forged/mutated output names, coefficients, and nonfinite biases, and compare their canonical bytes before returning any advisory flags. These self-consistency checks do not authenticate the original author or certify the supplied evidence flags. It accepts an optional UTF-8 `--rules-json` input with a bounded grammar.
 
 ```powershell
 python .\runtime\behavior_weight_lens.py --output-dir .\scratch-output
