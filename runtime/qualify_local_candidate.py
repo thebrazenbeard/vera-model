@@ -115,7 +115,8 @@ def probe(
     before = time.monotonic()
     try:
         completed = subprocess.run(
-            args, capture_output=True, text=True, timeout=timeout, check=False
+            args, capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=timeout, check=False
         )
     except subprocess.TimeoutExpired:
         result.update(status="INFERENCE_TIMEOUT", elapsed_s=round(time.monotonic() - before, 2))
