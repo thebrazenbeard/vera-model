@@ -13,6 +13,16 @@ The existing GLM24B sidecar and its `runtime/start-local.ps1` are unchanged.
 SHA-256 before the script even considers executing inference. If a model is
 missing or different, it returns a typed HOLD without launching the runner.
 
+**Evidence limit:** A preflight hash cannot prove which bytes `llama-cli`
+loads later by reopening the path. In `--execute` mode the tool rehashes
+both model and resolved runner executable **after** the invocation and emits
+`HOLD` if either readback differs or fails. Even matching pre/post hashes
+cannot rule out a transient in-between swap. Consequently
+`model_execution_evidence=UNVERIFIED_ON_EXEC`,
+`model_bytes_loaded_verified=false`, and
+`runner_bytes_executed_verified=false` always. Runner source/build identity,
+dynamic libraries, and runtime behavior remain outside this contract.
+
 - `gptoss-pruned4-q4`: 3,233,019,552 bytes, SHA-256
   `38b0279e4294beb54f97ac23051674174b34b2acd6c5e6532860c72298789586`.
   Upstream pruned GPT-OSS 20B to four experts per layer **without retraining**;
@@ -64,6 +74,12 @@ python runtime/qualify_local_candidate.py --candidate qwen35-4b-q4-control --mod
 
 Models are not downloaded by this tool. It defaults to CPU-only, bounded
 generation, 120-second timeout, and a single request per invocation.
+Live stdout/stderr are drained concurrently into bounded in-memory excerpts
+(first 8,000 / last 2,000 raw bytes), discarding any excess rather than
+buffering unbounded process output. Timeout terminates the subprocess.
+Read/permission errors and path changes are typed HOLDs. Generated excerpts
+may still contain sensitive text if you pass custom prompts; do not publish
+receipts without inspecting them.
 `--gpu-layers` is an explicit opt-in with maximum 16; do not assume GPU
 exclusivity or capacity. The script writes JSON only to stdout; users choose
 if/where to store a receipt. To avoid exporting private data, the built-in
@@ -75,7 +91,10 @@ prompts contain no personal names or history.
 python -m unittest discover -s tests -p "test_qualify_local_candidate.py" -v
 ```
 
-Focused tests: **6/6 PASS** on Lappy Python 3.14 on 2026-11-05. Both pinned
+Original focused tests: **6/6 PASS** on Lappy Python 3.14 on 2026-11-05.
+On 2026-11-06, additional hostile tests cover a synthetic 4-byte model swap
+mid-run, runner path replacement, read/permission failure, and 120KB/150KB
+process output. No real GGUF loading occurs during these unit tests. Both pinned
 large files were freshly SHA-256 checked, and both `--execute`-absent probes
 returned `READY_FOR_OPT_IN_LOCAL_PROBE`. That is a local binary and source
 mechanism check, **not** an identity or cognitive quality benchmark.
