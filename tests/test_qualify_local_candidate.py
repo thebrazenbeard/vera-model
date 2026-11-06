@@ -61,6 +61,7 @@ class CandidateProbeTests(unittest.TestCase):
         with patch.object(module, "verify_artifact", return_value={"status": "VERIFIED_LOCAL_BYTES", "sha256": "x"}), \
              patch.object(module.shutil, "which", return_value="llama-cli"), \
              patch.object(module, "_runner_snapshot", return_value={"path": "llama-cli", "sha256": "runnerhash"}), \
+             patch.object(module, "_resource_guard", return_value={"status": "PASS"}) as guard, \
              patch.object(module, "_bounded_run", return_value=done) as run:
             result = module.probe("qwen35-4b-q4-control", Path("any"), execute=True)
         self.assertEqual(result["status"], "RUNNER_EXIT_ZERO_UNQUALIFIED")
@@ -77,6 +78,7 @@ class CandidateProbeTests(unittest.TestCase):
         with patch.object(module, "verify_artifact", return_value={"status": "VERIFIED_LOCAL_BYTES"}), \
              patch.object(module.shutil, "which", return_value="llama-cli"), \
              patch.object(module, "_runner_snapshot", return_value={"path": "llama-cli", "sha256": "runnerhash"}), \
+             patch.object(module, "_resource_guard", return_value={"status": "PASS"}), \
              patch.object(module, "_bounded_run", side_effect=subprocess.TimeoutExpired("llama-cli", 120)):
             result = module.probe("gptoss-pruned4-q4", Path("any"), execute=True)
         self.assertEqual(result["status"], "INFERENCE_TIMEOUT")
@@ -95,6 +97,7 @@ class CandidateProbeTests(unittest.TestCase):
             with patch.dict(module.CANDIDATES, {"test-only": good}), \
                  patch.object(module.shutil, "which", return_value="test-runner"), \
                  patch.object(module, "_runner_snapshot", return_value={"path": "test-runner", "sha256": "fixed"}), \
+                 patch.object(module, "_resource_guard", return_value={"status": "PASS"}), \
                  patch.object(module, "_bounded_run", side_effect=mutate):
                 result = module.probe("test-only", path, execute=True)
             self.assertEqual(result["status"], "HOLD")
@@ -117,6 +120,7 @@ class CandidateProbeTests(unittest.TestCase):
                         "stdout_truncated": False, "stderr_truncated": False}
             with patch.dict(module.CANDIDATES, {"test-only": good}), \
                  patch.object(module.shutil, "which", return_value=str(runner)), \
+                 patch.object(module, "_resource_guard", return_value={"status": "PASS"}), \
                  patch.object(module, "_bounded_run", side_effect=mutate):
                 result = module.probe("test-only", model, execute=True)
             self.assertEqual(result["status"], "HOLD")
@@ -138,6 +142,47 @@ class CandidateProbeTests(unittest.TestCase):
         self.assertLessEqual(len(done["stderr"].encode("utf-8")), 2000)
         self.assertTrue(done["stdout_truncated"])
         self.assertTrue(done["stderr_truncated"])
+
+    def test_low_ram_prevents_process_launch(self):
+        with patch.object(module, "verify_artifact", return_value={"status": "VERIFIED_LOCAL_BYTES"}), \
+             patch.object(module.shutil, "which", return_value="llama-cli"), \
+             patch.object(module, "_runner_snapshot", return_value={"path": "llama-cli", "sha256": "runnerhash"}), \
+             patch.object(module, "_resource_guard", return_value={"status": "HOLD", "reason": "INSUFFICIENT_FREE_RAM"}) as guard, \
+             patch.object(module, "_bounded_run") as run:
+            result = module.probe("gptoss-pruned4-q4", Path("any"), execute=True)
+        self.assertEqual(result["status"], "HOLD")
+        self.assertEqual(result["reason"], "INSUFFICIENT_FREE_RAM")
+        guard.assert_called_once()
+        run.assert_not_called()
+
+    def test_guard_rejects_low_ram_and_low_gpu_vram(self):
+        with patch.object(module, "_available_ram_bytes", return_value=500_000_000):
+            limited = module._resource_guard(3_000_000_000, 0)
+        self.assertEqual(limited["reason"], "INSUFFICIENT_FREE_RAM")
+        with patch.object(module, "_available_ram_bytes", return_value=30_000_000_000), \
+             patch.object(module, "_available_nvidia_vram_bytes", return_value=100_000_000):
+            limited_gpu = module._resource_guard(3_000_000_000, 8)
+        self.assertEqual(limited_gpu["reason"], "INSUFFICIENT_FREE_VRAM")
+
+    def test_windows_tree_kill_attempts_taskkill_before_fallback(self):
+        class FakeProcess:
+            pid = 12345
+            killed = False
+            def poll(self):
+                return None
+            def kill(self):
+                self.killed = True
+            def wait(self, timeout=5):
+                return -9
+        fake = FakeProcess()
+        with patch.object(module, "_is_windows", return_value=True), \
+             patch.object(module.subprocess, "run") as taskkill:
+            taskkill.return_value.returncode = 0
+            outcome = module._terminate_timed_out_process(fake)
+        self.assertTrue(outcome["windows_tree_attempted"])
+        self.assertIn("/T", taskkill.call_args.args[0])
+        self.assertIn("/F", taskkill.call_args.args[0])
+        self.assertTrue(fake.killed)
 
 
 if __name__ == "__main__":
