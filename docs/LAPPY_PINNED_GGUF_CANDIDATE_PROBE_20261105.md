@@ -80,6 +80,20 @@ buffering unbounded process output. Timeout terminates the subprocess.
 Read/permission errors and path changes are typed HOLDs. Generated excerpts
 may still contain sensitive text if you pass custom prompts; do not publish
 receipts without inspecting them.
+
+Before explicit execution the tool now checks live free system RAM against a
+conservative floor (maximum of 4 GiB or twice file size plus 1 GiB). With
+`--gpu-layers` set it also requires an NVIDIA free-VRAM snapshot from
+`nvidia-smi` and a conservative floor (maximum of 1 GiB or one-quarter of
+model size). Unavailable or insufficient resources produce a typed HOLD
+without starting the model runner. These thresholds are guardrails, **not**
+proof the actual backend, selected GPU, concurrent usage, or load will fit.
+CPU-only remains the default.
+
+On timeout, Windows attempts `taskkill /T /F` for the runner PID and then a
+direct-process fallback; the receipt records the attempted cleanup but does
+not guarantee all descendant processes terminated. Do not use this probe
+as an isolation sandbox or run untrusted executables.
 `--gpu-layers` is an explicit opt-in with maximum 16; do not assume GPU
 exclusivity or capacity. The script writes JSON only to stdout; users choose
 if/where to store a receipt. To avoid exporting private data, the built-in
@@ -94,7 +108,9 @@ python -m unittest discover -s tests -p "test_qualify_local_candidate.py" -v
 Original focused tests: **6/6 PASS** on Lappy Python 3.14 on 2026-11-05.
 On 2026-11-06, additional hostile tests cover a synthetic 4-byte model swap
 mid-run, runner path replacement, read/permission failure, and 120KB/150KB
-process output. No real GGUF loading occurs during these unit tests. Both pinned
+process output. A second test wave covers low RAM/VRAM fail-closed behavior
+and best-effort Windows child-tree cleanup. **13/13 focused tests PASS** on
+Lappy Python 3.14. No real GGUF loading occurs during these unit tests. Both pinned
 large files were freshly SHA-256 checked, and both `--execute`-absent probes
 returned `READY_FOR_OPT_IN_LOCAL_PROBE`. That is a local binary and source
 mechanism check, **not** an identity or cognitive quality benchmark.
