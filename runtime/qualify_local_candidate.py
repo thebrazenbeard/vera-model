@@ -6,6 +6,7 @@ the runner. A successful subprocess exit NEVER admits a provider or identity.
 from __future__ import annotations
 
 import argparse
+import ctypes
 import hashlib
 import json
 import os
@@ -79,6 +80,109 @@ def _runner_snapshot(executable: str) -> dict:
             "bytes": size, "sha256": sha}
 
 
+def _is_windows() -> bool:
+    return os.name == "nt"
+
+
+def _available_ram_bytes() -> int | None:
+    """Read a current system free-RAM snapshot without extra dependencies."""
+    if _is_windows():
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [("dwLength", ctypes.c_ulong),
+                        ("dwMemoryLoad", ctypes.c_ulong)] + [
+                (field, ctypes.c_ulonglong) for field in (
+                    "ullTotalPhys", "ullAvailPhys", "ullTotalPageFile",
+                    "ullAvailPageFile", "ullTotalVirtual", "ullAvailVirtual",
+                    "ullAvailExtendedVirtual")
+            ]
+        status = MemoryStatus()
+        status.dwLength = ctypes.sizeof(status)
+        try:
+            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+                return int(status.ullAvailPhys)
+        except (AttributeError, OSError):
+            return None
+        return None
+    try:
+        for line in Path("/proc/meminfo").read_text(encoding="ascii").splitlines():
+            if line.startswith("MemAvailable:"):
+                return int(line.split()[1]) * 1024
+    except (OSError, ValueError, IndexError):
+        pass
+    return None
+
+
+def _available_nvidia_vram_bytes() -> int | None:
+    """One conservative NVIDIA snapshot; not proof of runner GPU selection."""
+    binary = shutil.which("nvidia-smi")
+    if binary is None:
+        return None
+    try:
+        result = _bounded_run(
+            [binary, "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
+            timeout=5,
+        )
+        if result["returncode"] != 0 or result["capture_incomplete"]:
+            return None
+        values = [int(line.strip()) for line in result["stdout"].splitlines() if line.strip()]
+        return min(values) * 1024 * 1024 if values else None
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+
+
+def _resource_guard(model_bytes: int, gpu_layers: int) -> dict:
+    """Conservative, non-authoritative pre-execution availability threshold."""
+    # Leave overhead for inference context, Python, OS, and competing work.
+    required_ram = max(4 * 1024 ** 3, 2 * model_bytes + 1024 ** 3)
+    free_ram = _available_ram_bytes()
+    evidence = {"free_ram_bytes": free_ram, "required_free_ram_bytes": required_ram,
+                "resource_snapshot_not_capacity_guarantee": True}
+    if free_ram is None:
+        return {**evidence, "status": "HOLD", "reason": "FREE_RAM_UNAVAILABLE"}
+    if free_ram < required_ram:
+        return {**evidence, "status": "HOLD", "reason": "INSUFFICIENT_FREE_RAM"}
+    if gpu_layers:
+        # This prevents obviously constrained GPU launches, but the CLI backend
+        # and device choice are not bound by an nvidia-smi observation.
+        required_gpu = max(1024 ** 3, model_bytes // 4)
+        free_gpu = _available_nvidia_vram_bytes()
+        evidence.update(free_nvidia_vram_bytes=free_gpu,
+                        required_free_nvidia_vram_bytes=required_gpu)
+        if free_gpu is None:
+            return {**evidence, "status": "HOLD", "reason": "FREE_VRAM_UNAVAILABLE"}
+        if free_gpu < required_gpu:
+            return {**evidence, "status": "HOLD", "reason": "INSUFFICIENT_FREE_VRAM"}
+    return {**evidence, "status": "PASS"}
+
+
+def _terminate_timed_out_process(process) -> dict:
+    """Best-effort Windows process tree cleanup with direct-child fallback."""
+    attempted = _is_windows()
+    taskkill_succeeded = False
+    if attempted:
+        try:
+            completed = subprocess.run(
+                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=5, check=False,
+            )
+            taskkill_succeeded = completed.returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    try:
+        if process.poll() is None:
+            process.kill()
+    except OSError:
+        pass
+    try:
+        process.wait(timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return {"windows_tree_attempted": attempted,
+            "taskkill_returned_success": taskkill_succeeded,
+            "descendant_termination_guaranteed": False}
+
+
 def _bounded_run(args: list[str], *, timeout: int) -> dict:
     """Drain both pipes continuously while retaining at most 8k/2k bytes."""
     def collect(stream, limit: int, tail: bool, state: dict) -> None:
@@ -109,9 +213,8 @@ def _bounded_run(args: list[str], *, timeout: int) -> dict:
             worker.start()
         try:
             returncode = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
+        except subprocess.TimeoutExpired as exc:
+            exc.cleanup_report = _terminate_timed_out_process(process)
             raise
         finally:
             for worker in workers:
@@ -203,11 +306,19 @@ def probe(
         result.update(status="READY_FOR_OPT_IN_LOCAL_PROBE", runner=runner_path,
                       selected_gpu_layers=gpu_layers)
         return result
+    guard = _resource_guard(record["bytes"], gpu_layers)
+    result["pre_execution_resource_guard"] = guard
+    if guard["status"] != "PASS":
+        result.update(status="HOLD", reason=guard["reason"])
+        return result
     before = time.monotonic()
     try:
         completed = _bounded_run(args, timeout=timeout)
-    except subprocess.TimeoutExpired:
-        result.update(status="INFERENCE_TIMEOUT")
+    except subprocess.TimeoutExpired as exc:
+        result.update(status="INFERENCE_TIMEOUT",
+                      timeout_cleanup=getattr(exc, "cleanup_report", {
+                          "descendant_termination_guaranteed": False
+                      }))
     except OSError:
         result.update(status="HOLD", reason="RUNNER_LAUNCH_ERROR")
     else:
