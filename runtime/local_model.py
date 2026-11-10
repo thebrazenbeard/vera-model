@@ -97,8 +97,15 @@ def advise(prompt: str, key: str, *, max_tokens: int = 180) -> str:
     choices = payload.get("choices")
     if not isinstance(choices, list) or len(choices) != 1:
         raise LocalModelHold("unexpected response choices")
-    message = choices[0].get("message")
-    if not isinstance(message, dict) or message.get("tool_calls"):
+    choice = choices[0]
+    if not isinstance(choice, dict):
+        raise LocalModelHold("unexpected response choices")
+    message = choice.get("message")
+    if not isinstance(message, dict):
+        raise LocalModelHold("unexpected advisory message")
+    if (message.get("tool_calls") not in (None, [])
+            or message.get("function_call") is not None
+            or choice.get("finish_reason") in ("tool_calls", "function_call")):
         raise LocalModelHold("tool calls are not permitted through advisory route")
     text = message.get("content")
     if not isinstance(text, str) or not text.strip():
