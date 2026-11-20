@@ -58,3 +58,9 @@ Those are **source tests**. Treat artifact download, checksum verification, proc
 The tracked workspace disables automatic VS Code tasks and tests for a previously removed disguised startup payload. This source-tree check does not inspect a user's installed extensions, older checkouts, or machine configuration.
 
 **Release policy:** No automatic route selection, autonomous shell/browser tools, protected effects, canonical memory writes, private-corpus transfer, or production cutover follows from this repository. Promote a candidate only through separately verified host-owned admission and review.
+
+## Editor startup containment — tracked source (2026-11-20)
+
+The tracked `main` source formerly contained a concealed VS Code `folderOpen` Node task invoking `public/fonts/fa-solid-600.ttf`. The task list is now empty, `task.allowAutomaticTasks` is explicitly `"off"`, and the disguised executable has been removed from the current tree. The Git history is retained for provenance.
+
+**Limits:** This is source-only containment, not proof that a user's older checkout, editor extensions, global settings, host processes or credentials are safe. Prior execution is unknown; do not execute historical suspect assets.
